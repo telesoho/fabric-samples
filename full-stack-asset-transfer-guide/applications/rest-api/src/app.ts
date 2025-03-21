@@ -1,5 +1,5 @@
-import * as express from 'express';
-import * as bodyParser from 'body-parser';
+import express from 'express';
+import bodyParser from 'body-parser';
 import { Connection } from './connection';
 import { AssetRouter } from './assets.router';
 var cors = require('cors');

@@ -8,16 +8,16 @@ const channelName = envOrDefault('CHANNEL_NAME', 'mychannel');
 const chaincodeName = envOrDefault('CHAINCODE_NAME', 'asset-transfer');
 const mspId = envOrDefault('MSP_ID', 'Org1MSP');
 //Local development and testing uncomment below code
-// const WORKSHOP_CRYPTO =envOrDefault('CRYPTO_PATH', path.resolve(__dirname, '..','..', '..', 'infrastructure', 'sample-network', 'temp'));
-// const keyPath = WORKSHOP_CRYPTO + "/enrollments/org1/users/org1user/msp/keystore/key.pem";
-// const certPath = WORKSHOP_CRYPTO + "/enrollments/org1/users/org1user/msp/signcerts/cert.pem"
-// const tlsCertPath = WORKSHOP_CRYPTO + "/channel-msp/peerOrganizations/org1/msp/tlscacerts/tlsca-signcert.pem";
+const WORKSHOP_CRYPTO =envOrDefault('CRYPTO_PATH', path.resolve(__dirname, '..','..', '..', 'infrastructure', 'sample-network', 'temp'));
+const keyPath = WORKSHOP_CRYPTO + "/enrollments/org1/users/org1user/msp/keystore/key.pem";
+const certPath = WORKSHOP_CRYPTO + "/enrollments/org1/users/org1user/msp/signcerts/cert.pem"
+const tlsCertPath = WORKSHOP_CRYPTO + "/channel-msp/peerOrganizations/org1/msp/tlscacerts/tlsca-signcert.pem";
 
 // //kubenetes certificates file path
-const WORKSHOP_CRYPTO = "/etc/secret-volume/"
-const keyPath = WORKSHOP_CRYPTO + "keyPath";
-const certPath = WORKSHOP_CRYPTO + "certPath"
-const tlsCertPath = WORKSHOP_CRYPTO + "tlsCertPath";
+// const WORKSHOP_CRYPTO = "/etc/secret-volume/"
+// const keyPath = WORKSHOP_CRYPTO + "keyPath";
+// const certPath = WORKSHOP_CRYPTO + "certPath"
+// const tlsCertPath = WORKSHOP_CRYPTO + "tlsCertPath";
 console.log("keyPath " + keyPath);
 console.log("certPath " + certPath);
 console.log("tlsCertPath " + tlsCertPath);
@@ -69,7 +69,7 @@ async function initFabric(): Promise<void> {
         console.log('sample log');
         console.log(e.message);
     } finally {
-        console.log('error log ');
+        // console.log('error log ');
         // gateway.close();
         // client.close();
     }
