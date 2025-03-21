@@ -1,0 +1,25 @@
+// Demo file for use with REST Client for Visual Studio Code
+// See https://github.com/Huachao/vscode-restclient
+// 
+// Edit the values below to match your environment if required
+@hostname = localhost
+@port = {{$dotenv PORT}}
+@baseUrl = http://{{hostname}}:{{port}}
+@apiUrl = {{baseUrl}}
+
+### list
+GET {{baseUrl}}/list HTTP/1.1
+
+### create
+POST {{baseUrl}}/create HTTP/1.1
+content-type: application/json
+
+{
+    "AppraisedValue": 123,
+    "Color": "red",
+    "Owner": "test01",
+    "Size": 10
+}
+
+### get
+GET {{baseUrl}}/get/1742513360033 HTTP/1.1
