@@ -1,0 +1,63 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus.ambs.telesoho.com
+  namespace: monitoring
+spec:
+  rules:
+  - host: prometheus.ambs.telesoho.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: prometheus-k8s
+            port:
+              number: 9090
+  ingressClassName: nginx
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: monitor.ambs.telesoho.com
+  namespace: monitoring
+spec:
+  rules:
+  - host: monitor.ambs.telesoho.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana
+            port:
+              number: 3000
+  ingressClassName: nginx
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: 60s
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+  name: fabnet.ambs.telesoho.com
+  namespace: test-network
+spec:
+  rules:
+  - host: fabnet.ambs.telesoho.com
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: hlf-console
+            port:
+              name: optools
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - fabnet.ambs.telesoho.com
