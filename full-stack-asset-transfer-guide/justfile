@@ -95,6 +95,21 @@ console: operator
 operator-crds: check-kube
     kubectl apply -k https://github.com/hyperledger-labs/fabric-operator.git/config/crd
 
+monitoring: check-setup
+    # you also can use following command to download all files of setup 
+    # curl -s https://api.github.com/repos/prometheus-operator/kube-prometheus/contents/manifests/setup | jq -r '.[].download_url' | xargs wge
+    # kubectl apply --server-side -k https://github.com/prometheus-operator/kube-prometheus.git/manifests/setup
+    #!/bin/bash
+    kubectl apply --server-side -f kube-prometheus/manifests/setup
+    kubectl wait \
+        --for condition=Established \
+        --all CustomResourceDefinition \
+        --namespace=monitoring
+    kubectl apply -f kube-prometheus/manifests
+
+unmonitoring:
+    #!/bin/bash
+    kubectl delete --ignore-not-found=true -f kube-prometheus/manifests/ -f kube-prometheus/manifests/setup
 
 ###############################################################################
 # TEST TARGETS
