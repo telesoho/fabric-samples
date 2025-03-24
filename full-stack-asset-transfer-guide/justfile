@@ -111,6 +111,13 @@ unmonitoring:
     #!/bin/bash
     kubectl delete --ignore-not-found=true -f kube-prometheus/manifests/ -f kube-prometheus/manifests/setup
 
+ambs:
+    kubectl apply -f ambs.telesoho.com.yaml
+
+unambs:
+    kubectl delete -f ambs.telesoho.com.yaml
+
+
 ###############################################################################
 # TEST TARGETS
 ###############################################################################

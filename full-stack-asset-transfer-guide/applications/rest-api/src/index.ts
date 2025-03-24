@@ -9,7 +9,7 @@ async function main() {
   logger.info('Adding rate limiter');
 
   logger.info('Starting REST server');
-  const server = app.listen(config.port, () => {
+  const server = app.listen(config.port, "0.0.0.0",() => {
     logger.info('REST server started on port: %d', config.port);
   });
 

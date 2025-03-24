@@ -43,6 +43,24 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
+  name: api.ambs.telesoho.com
+spec:
+  rules:
+  - host: api.ambs.telesoho.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: rest-api
+            port:
+              number: 80
+  ingressClassName: nginx
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
   name: rest-api
   annotations:
     nginx.ingress.kubernetes.io/proxy-connect-timeout: 60s

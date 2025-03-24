@@ -42,6 +42,8 @@ spec:
     peerTag: ${PEER_IMAGE_LABEL}
     grpcwebImage: ${GRPCWEB_IMAGE}
     grpcwebTag: ${GRPCWEB_IMAGE_LABEL}
+    couchdbImage: ${COUCHDB_IMAGE}
+    couchdbTag: ${COUCHDB_IMAGE_LABEL}    
   mspID: Org2MSP
   mspSecret: org2-peer1-secret
   secret:
@@ -71,7 +73,7 @@ spec:
     peername: org2-peer1
   service:
     type: ClusterIP
-  stateDb: leveldb
+  stateDb: couchdb
   storage:
     peer:
       class: "${STORAGE_CLASS}"

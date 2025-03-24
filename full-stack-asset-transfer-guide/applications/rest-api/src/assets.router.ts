@@ -13,22 +13,27 @@ export class AssetRouter {
             })
         app.route('/create')
             .post(async (req: Request, res: Response) => {
-                logger.debug(req.body)
-                const smartContract = new AssetTransfer(Connection.contract);
-                var Id = Date.now();                
-                await smartContract.createAsset({
-                    ID: Id + "",
-                    Owner: req.body.Owner,
-                    Color: req.body.Color,
-                    Size: req.body.Size,
-                    AppraisedValue: req.body.AppraisedValue,
-                });
-                var response = ({ Id })
-                res.status(200).send(response);
+                logger.info(req.body)
+                try {
+                    const smartContract = new AssetTransfer(Connection.contract);
+                    var Id = Date.now();                
+                    await smartContract.createAsset({
+                        ID: Id + "",
+                        Owner: req.body.Owner,
+                        Color: req.body.Color,
+                        Size: req.body.Size,
+                        AppraisedValue: req.body.AppraisedValue,
+                    });
+                    var response = ({ Id });
+                    res.status(200).send(response);
+                } catch (error) {
+                    logger.error("error", error);
+                    res.status(500).send({error});                    
+                }
             })
         app.route('/update')
             .post(async (req: Request, res: Response) => {
-                logger.debug(req.body)
+                logger.debug(req.body);
                 try {
                     const smartContract = new AssetTransfer(Connection.contract);
                     const result = await smartContract.updateAsset({
@@ -36,7 +41,7 @@ export class AssetRouter {
                         Color: req.body.Color,
                         Size: req.body.Size,
                         AppraisedValue: req.body.AppraisedValue,
-                    })
+                    });
                     res.status(200).send(result);
                 } catch (error) {
                     logger.error("error", error);
