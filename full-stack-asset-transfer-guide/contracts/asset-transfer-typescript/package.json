@@ -28,16 +28,16 @@
     "dependencies": {
         "fabric-contract-api": "~2.5",
         "fabric-shim": "~2.5",
-        "json-stringify-deterministic": "^1.0.7",
-        "sort-keys-recursive": "^2.1.7"
+        "json-stringify-deterministic": "^1.0.12",
+        "sort-keys-recursive": "^2.1.10"
     },
     "devDependencies": {
-        "@types/node": "^18.19.33",
-        "@eslint/js": "^9.3.0",
-        "@tsconfig/node18": "^18.2.4",
-        "eslint": "^8.57.0",
-        "typescript": "~5.4.5",
-        "typescript-eslint": "^7.11.0"
+        "@eslint/js": "^9.23.0",
+        "@tsconfig/node22": "^22.0.1",
+        "@types/node": "^22.13.13",
+        "eslint": "^9.23.0",
+        "typescript": "~5.8.2",
+        "typescript-eslint": "^8.27.0"
     },
     "nyc": {
         "extension": [

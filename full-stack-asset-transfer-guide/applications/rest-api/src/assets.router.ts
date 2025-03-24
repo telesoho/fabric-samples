@@ -16,9 +16,9 @@ export class AssetRouter {
                 logger.info(req.body)
                 try {
                     const smartContract = new AssetTransfer(Connection.contract);
-                    var Id = Date.now();                
+                    var Id = Date.now();
                     await smartContract.createAsset({
-                        ID: Id + "",
+                        ID: req.body.ID??Id + "",
                         Owner: req.body.Owner,
                         Color: req.body.Color,
                         Size: req.body.Size,

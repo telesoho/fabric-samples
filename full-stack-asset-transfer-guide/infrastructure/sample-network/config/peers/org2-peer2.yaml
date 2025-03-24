@@ -91,8 +91,15 @@ spec:
         memory: 10M
     peer:
       limits:
-        cpu: 500m
-        memory: 1G
+        cpu: 100m
+        memory: 200M
+      requests:
+        cpu: 10m
+        memory: 10M
+    couchdb:
+      limits:
+        cpu: 100m
+        memory: 200M
       requests:
         cpu: 10m
         memory: 10M
