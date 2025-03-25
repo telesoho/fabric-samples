@@ -1,0 +1,24 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "compilerOptions": {
+        "lib": ["es2023"],
+        "module": "nodenext",
+        "target": "es2022",
+    
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "moduleResolution": "node16",
+    
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "outDir": "dist",
+        "strict": true,
+        "noUnusedLocals": true,
+        "noImplicitReturns": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": ["src/"]
+}

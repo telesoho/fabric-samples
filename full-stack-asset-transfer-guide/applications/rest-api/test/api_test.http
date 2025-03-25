@@ -5,7 +5,14 @@
 @hostname = localhost
 @port = {{$dotenv PORT}}
 @baseUrl = http://{{hostname}}:{{port}}
+# @baseUrl = http://api.ambs.telesoho.com:8080
+# @baseUrl = http://localhost:8090
+
 @apiUrl = {{baseUrl}}
+
+### accountInfo
+
+GET {{baseUrl}}/user
 
 ### list
 GET {{baseUrl}}/list HTTP/1.1
@@ -22,4 +29,4 @@ content-type: application/json
 }
 
 ### get
-GET {{baseUrl}}/get/1742513360033 HTTP/1.1
+GET {{baseUrl}}/get/1742820401468 HTTP/1.1

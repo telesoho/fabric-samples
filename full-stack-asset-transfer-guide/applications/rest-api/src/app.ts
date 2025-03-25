@@ -2,17 +2,20 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import { Connection } from './connection';
 import { AssetRouter } from './assets.router';
+import { OdooUserRouter } from './odoo-user.router';
 var cors = require('cors');
 
 class App {
     public app: express.Application;
     public routes: AssetRouter = new AssetRouter();
+    public odooUserRoutes: OdooUserRouter = new OdooUserRouter();
     constructor() {
         new Connection().init();
         this.app = express();
         this.app.use(cors());
         this.config();
         this.routes.routes(this.app);
+        this.odooUserRoutes.routes(this.app);
     }
 
     private config(): void {

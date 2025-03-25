@@ -6,6 +6,8 @@ import * as path from 'path';
 import { promises as fs } from 'fs';
 const channelName = envOrDefault('CHANNEL_NAME', 'mychannel');
 const chaincodeName = envOrDefault('CHAINCODE_NAME', 'asset-transfer');
+const odooUserChaincodeName = envOrDefault('CHAINCODE_NAME_ODOO_USER', 'odoo-user');
+
 const mspId = envOrDefault('MSP_ID', 'Org1MSP');
 //Local development and testing uncomment below code
 const WORKSHOP_CRYPTO =envOrDefault('CRYPTO_PATH', path.resolve(__dirname, '..','..', '..', 'infrastructure', 'sample-network', 'temp'));
@@ -25,6 +27,7 @@ const peerEndpoint = "test-network-org1-peer1-peer.localho.st:443";
 const peerHostAlias = "test-network-org1-peer1-peer.localho.st";
 export class Connection {
     public static contract: Contract;
+    public static odooUserContract: Contract;
     public init() {
         initFabric();
     }
@@ -60,6 +63,8 @@ async function initFabric(): Promise<void> {
         // Get the smart contract from the network.
         const contract = network.getContract(chaincodeName);
         Connection.contract = contract;
+        const odooUserContract = network.getContract(odooUserChaincodeName);
+        Connection.odooUserContract = odooUserContract;
 
         // Initialize a set of asset data on the ledger using the chaincode 'InitLedger' function.
         //        await initLedger(contract);

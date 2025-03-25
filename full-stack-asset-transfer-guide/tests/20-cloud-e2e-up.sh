@@ -260,20 +260,26 @@ COUNT=$(kubectl -n ${WORKSHOP_NAMESPACE} get pods -l app.kubernetes.io/created-b
 [[ $COUNT -eq 3 ]]
 
 
-
 ###############################################################################
 # 31 : build, tag, push, install
 ###############################################################################
 
-# build again and iterate
-SEQUENCE=$((SEQUENCE + 1))
-VERSION=v0.0.$SEQUENCE
+CHANNEL_NAME=mychannel
+VERSION=v1.0.0
+SEQUENCE=1
+
+CHAINCODE_NAME=odoo-user
+CHAINCODE_PACKAGE=${CHAINCODE_NAME}.tgz
 
 build_cc
 prepare_cc
 install_cc
 check_cc_meta
 
+# cc pod is up - is there a selector for the target sequence / rev?
+kubectl -n test-network describe pods -l app.kubernetes.io/created-by=fabric-builder-k8s
+
+kubectl -n ${WORKSHOP_NAMESPACE} describe pods -l app.kubernetes.io/created-by=fabric-builder-k8s
 COUNT=$(kubectl -n ${WORKSHOP_NAMESPACE} get pods -l app.kubernetes.io/created-by=fabric-builder-k8s | wc -l)
 
 # one pod per peer + header line
@@ -281,23 +287,42 @@ COUNT=$(kubectl -n ${WORKSHOP_NAMESPACE} get pods -l app.kubernetes.io/created-b
 
 
 ###############################################################################
+# 31 : build, tag, push, install
+###############################################################################
+
+# build again and iterate
+# SEQUENCE=$((SEQUENCE + 1))
+# VERSION=v0.0.$SEQUENCE
+
+# build_cc
+# prepare_cc
+# install_cc
+# check_cc_meta
+
+# COUNT=$(kubectl -n ${WORKSHOP_NAMESPACE} get pods -l app.kubernetes.io/created-by=fabric-builder-k8s | wc -l)
+
+# # one pod per peer + header line
+# [[ $COUNT -eq 5 ]]
+
+
+###############################################################################
 # 32 : Install chaincode from a prepared / CI package on a web server
 ###############################################################################
 
-SEQUENCE=$((SEQUENCE + 1))
-VERSION=v0.1.3
-CHAINCODE_PACKAGE=asset-transfer-typescript-${VERSION}.tgz
+# SEQUENCE=$((SEQUENCE + 1))
+# VERSION=v0.1.3
+# CHAINCODE_PACKAGE=asset-transfer-typescript-${VERSION}.tgz
 
-# Download the package from a github release
-curl -LO https://github.com/hyperledgendary/full-stack-asset-transfer-guide/releases/download/${VERSION}/${CHAINCODE_PACKAGE}
+# # Download the package from a github release
+# curl -LO https://github.com/hyperledgendary/full-stack-asset-transfer-guide/releases/download/${VERSION}/${CHAINCODE_PACKAGE}
 
-install_cc
-check_cc_meta
+# install_cc
+# check_cc_meta
 
-COUNT=$(kubectl -n ${WORKSHOP_NAMESPACE} get pods -l app.kubernetes.io/created-by=fabric-builder-k8s | wc -l)
+# COUNT=$(kubectl -n ${WORKSHOP_NAMESPACE} get pods -l app.kubernetes.io/created-by=fabric-builder-k8s | wc -l)
 
-# one pod per peer + header line
-[[ $COUNT -eq 7 ]]
+# # one pod per peer + header line
+# [[ $COUNT -eq 7 ]]
 
 
 ###############################################################################
