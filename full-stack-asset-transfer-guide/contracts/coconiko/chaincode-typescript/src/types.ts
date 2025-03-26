@@ -23,6 +23,7 @@ export interface SystemInfoJSON {
   docType: string;
   totalSupply: number;
   totalActiveSupply: number;
+  totalBurned: number;
   [key: string]: unknown;
 }
 

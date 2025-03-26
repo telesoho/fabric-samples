@@ -1,4 +1,4 @@
-import { Context, Contract } from 'fabric-contract-api';
+import { Context, Contract, Info, Transaction } from 'fabric-contract-api';
 import { GovernanceToken } from './GovernanceToken';
 import { Proposal } from './Proposal';
 import { ProposalVote } from './ProposalVote';
@@ -6,12 +6,21 @@ import { ContractEvent } from '../ContractEvent';
 
 const orgMSPID = 'sdlMSP';
 
+@Info({
+    title: 'GovernanceTokenContract',
+    description: 'Smart contract for managing governance tokens and voting processes in the Coconiko platform',
+    version: '1.0',
+    license: {
+        name: 'Apache-2.0'
+    }
+})
 export class GovernanceTokenContract extends Contract {
 
     constructor() {
         super('GovernanceTokenContract');
     }
 
+    @Transaction()
     async CreateProposal(ctx: Context, proposalJson: string): Promise<Record<string, unknown>> {
         ContractEvent.initEvents();
 
@@ -27,6 +36,7 @@ export class GovernanceTokenContract extends Contract {
         return proposal.toJSON();
     }
 
+    @Transaction()
     async MintGovernanceToken(ctx: Context, amount: number): Promise<Record<string, unknown>> {
         ContractEvent.initEvents();
 
@@ -39,6 +49,7 @@ export class GovernanceTokenContract extends Contract {
         return gtoken.toJSON();
     }
 
+    @Transaction()
     async Vote(ctx: Context, proposalId: string, tokenId: string, support: boolean): Promise<Record<string, unknown>> {
         ContractEvent.initEvents();
 
@@ -71,6 +82,7 @@ export class GovernanceTokenContract extends Contract {
         return proposal.toJSON();
     }
 
+    @Transaction()
     async Patch(ctx: Context, key: string, data: string): Promise<void> {
         // Check minter authorization - assumes orgMSPID is the issuer with privilege to mint a new token
         const clientMSPID = ctx.clientIdentity.getMSPID();

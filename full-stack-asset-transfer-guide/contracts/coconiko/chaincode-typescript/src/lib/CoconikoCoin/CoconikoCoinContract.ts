@@ -1,4 +1,4 @@
-import { Context, Contract } from 'fabric-contract-api';
+import { Context, Contract, Info, Transaction } from 'fabric-contract-api';
 import { CoconikoCoin } from './CoconikoCoin';
 import { SystemInfo } from '../SystemInfo';
 import { UserInfo } from '../UserInfo';
@@ -41,6 +41,14 @@ interface PaginatedResponse<T> {
 /**
  * Contract for managing CoconikoCoin tokens
  */
+@Info({
+    title: 'CoconikoCoinContract',
+    description: 'Smart contract for managing CoconikoCoin tokens in the Coconiko platform',
+    version: '1.0',
+    license: {
+        name: 'Apache-2.0'
+    }
+})
 class CoconikoCoinContract extends Contract {
 
     /**
@@ -55,6 +63,7 @@ class CoconikoCoinContract extends Contract {
      * @param ctx The transaction context
      * @returns The token name
      */
+    @Transaction(false)
     async TokenName(ctx: Context): Promise<string> {
         return 'coconiko-coin';
     }
@@ -66,6 +75,7 @@ class CoconikoCoinContract extends Contract {
      * @param endDate Optional end date for filtering
      * @returns A summary of token supply
      */
+    @Transaction(false)
     async TotalSupply(ctx: Context, startDate?: string, endDate?: string): Promise<TokenSummary> {
         const selector: {
             docType: string;
@@ -138,6 +148,7 @@ class CoconikoCoinContract extends Contract {
      * Initializes the contract
      * @param ctx The transaction context
      */
+    @Transaction()
     async Initialize(ctx: Context): Promise<void> {
         const clientMSPID = ctx.clientIdentity.getMSPID();
         if (clientMSPID !== orgMSPID) {
@@ -158,6 +169,7 @@ class CoconikoCoinContract extends Contract {
      * @param ctx The transaction context
      * @returns The created user account
      */
+    @Transaction()
     async CreateUserAccount(ctx: Context): Promise<Record<string, unknown>> {
         ContractEvent.initEvents();
         const userInfo = await UserInfo.createUserAccount(ctx);
@@ -170,6 +182,7 @@ class CoconikoCoinContract extends Contract {
      * @param ctx The transaction context
      * @returns The client account information
      */
+    @Transaction(false)
     async ClientAccountInfo(ctx: Context): Promise<Record<string, unknown>> {
         const userInfo = await UserInfo.fromState(ctx, ctx.clientIdentity.getID());
         return userInfo.toJSON();
@@ -181,6 +194,7 @@ class CoconikoCoinContract extends Contract {
      * @param active Whether the user should be active
      * @returns The updated user account
      */
+    @Transaction()
     async ActiveUser(ctx: Context, active: string): Promise<Record<string, unknown>> {
         ContractEvent.initEvents();
         const userInfo = await UserInfo.getOrCreateCurrentUserAccount(ctx);
@@ -200,6 +214,7 @@ class CoconikoCoinContract extends Contract {
      * @param days Number of days until expiration
      * @returns The minted coin
      */
+    @Transaction()
     async Mint(ctx: Context, amount: string, days: string): Promise<Record<string, unknown>> {
         ContractEvent.initEvents();
         const clientMSPID = ctx.clientIdentity.getMSPID();
@@ -249,104 +264,145 @@ class CoconikoCoinContract extends Contract {
         
         // Commit event
         await ContractEvent.commitEvents(ctx);
+
         return coin.toJSON();
     }
 
     /**
-     * Gets the balance of a user
+     * Gets the balance of a specific owner
      * @param ctx The transaction context
-     * @param owner The owner account ID
-     * @returns The balance
+     * @param owner The owner's ID
+     * @returns The owner's balance
      */
+    @Transaction(false)
     async BalanceOf(ctx: Context, owner: string): Promise<number> {
-        const ownerInfo = await UserInfo.fromState(ctx, owner);
-        return ownerInfo.data.balance;
+        const userInfo = await UserInfo.fromState(ctx, owner);
+        return userInfo.data.balance;
     }
 
     /**
-     * Queries assets with pagination
+     * Query assets with pagination
      * @param ctx The transaction context
-     * @param queryString Query string in CouchDB syntax
-     * @param pageSize Number of records per page
-     * @param bookmark Bookmark for pagination
-     * @returns JSON string with query results and pagination metadata
+     * @param queryString The query string
+     * @param pageSize The page size
+     * @param bookmark Optional bookmark for pagination
+     * @returns Paginated results
      */
+    @Transaction(false)
     async queryAssetsWithPagination(ctx: Context, queryString: string, pageSize: string, bookmark?: string): Promise<string> {
-        const pageSizeInt = parseInt(pageSize);
-        const { iterator, metadata } = await ctx.stub.getQueryResultWithPagination(queryString, pageSizeInt, bookmark);
-        console.log(metadata);
-
-        const results = await this._getAllResults(iterator, false);
-
-        const ResponseMetadata = {
-            RecordsCount: metadata.fetchedRecordsCount,
-            Bookmark: metadata.bookmark,
+        const pageNumber = parseInt(pageSize);
+        const { iterator, metadata } = await ctx.stub.getQueryResultWithPagination(queryString, pageNumber, bookmark);
+        const results = await this._getAllResults(iterator);
+        
+        const result: PaginatedResponse<unknown> = {
+            results,
+            metadata: {
+                RecordsCount: metadata.fetchedRecordsCount,
+                Bookmark: metadata.bookmark
+            }
         };
-
-        const returnData: PaginatedResponse<unknown> = { 
-            results: results, 
-            metadata: ResponseMetadata 
-        };
-
-        return JSON.stringify(returnData);
+        
+        return JSON.stringify(result);
     }
 
     /**
-     * Burns expired coins
+     * Burns expired tokens
      * @param ctx The transaction context
-     * @param owner The owner account ID
-     * @param expirationDate The expiration date of the coin
-     * @returns The burned coin or a message indicating the coin was already burned
+     * @param owner The owner's ID
+     * @param expirationDate The expiration date
+     * @returns Result of the burn operation
      */
+    @Transaction()
     async BurnExpired(ctx: Context, owner: string, expirationDate: string): Promise<Record<string, unknown> | string> {
         ContractEvent.initEvents();
-
+        
+        const clientId = ctx.clientIdentity.getID();
+        console.debug('clientId is ', clientId);
+        
         const clientMSPID = ctx.clientIdentity.getMSPID();
         if (clientMSPID !== orgMSPID) {
-            throw new Error('Client is not authorized to burn coins');
+            throw new Error(`clientMSPID: ${clientMSPID}, client is not authorized to burn`);
         }
-
-        const coin = await CoconikoCoin.fromState(ctx, owner, expirationDate);
-        if (coin.data.burned) {
-            return 'Coin already burned';
-        }
-
-        coin.data.burned = true;
-        await coin.putState(ctx);
-
-        // Decrease owner balance
+        
+        // Get user info
         const userInfo = await UserInfo.fromState(ctx, owner);
-        if (userInfo.data.balance < coin.data.amount) {
-            throw new Error('Out of user balance, please contact administrator.');
+        
+        // Convert expirationDate to Date object
+        const date = new Date(expirationDate);
+        if (isNaN(date.getTime())) {
+            return {
+                error: 'Invalid date format'
+            };
         }
-        userInfo.data.balance -= coin.data.amount;
-        await userInfo.putState(ctx);
-
-        const systemInfo = await SystemInfo.fromState(ctx);
-        if (systemInfo.data.totalSupply < coin.data.amount) {
-            throw new Error('Out of system balance, please contact administrator.');
+        
+        // Format the date as ISO string without milliseconds and timezone
+        const formattedDate = date.toISOString().split('.')[0] + 'Z';
+        
+        // Search for coins with expiration date
+        const selector = {
+            docType: 'localcoin',
+            owner,
+            expirationDate: {
+                $lte: formattedDate
+            }
+        };
+        
+        // Query for expired coins
+        const queryString = JSON.stringify({
+            selector
+        });
+        console.debug(queryString);
+        
+        // Get expired coins
+        const iterator = await ctx.stub.getQueryResult(queryString);
+        let res = await iterator.next();
+        let totalBurned = 0;
+        
+        // Process each expired coin
+        while (!res.done) {
+            if (res.value && res.value.value.toString()) {
+                const coin = CoconikoCoin.fromBuffer(res.value.value);
+                
+                // Update user balance
+                userInfo.data.balance -= coin.data.amount;
+                
+                // Update system info
+                const systemInfo = await SystemInfo.fromState(ctx);
+                systemInfo.data.totalBurned += coin.data.amount;
+                systemInfo.data.totalSupply -= coin.data.amount;
+                await systemInfo.putState(ctx);
+                
+                // Increase total burned amount
+                totalBurned += coin.data.amount;
+                
+                // Remove the coin from state
+                coin.data.amount = 0;
+                await ctx.stub.deleteState(coin.getKey(ctx));
+            }
+            res = await iterator.next();
         }
-        systemInfo.data.totalSupply -= coin.data.amount;
-        await systemInfo.putState(ctx);
-
-        // Emit the Transfer event
-        const from = owner;
-        const to = SystemId;
-        const transferEvent = new CoinTransferEvent(from, to, coin.data.amount, coin.data.expirationDate);
-        await transferEvent.putState(ctx);
-
-        // Commit events
+        await iterator.close();
+        
+        // Update user info
+        if (totalBurned > 0) {
+            await userInfo.putState(ctx);
+        }
+        
         await ContractEvent.commitEvents(ctx);
-        return coin.toJSON();
+        
+        return {
+            burned: totalBurned
+        };
     }
 
     /**
-     * Gets a summary of token usage
+     * Gets usage summary
      * @param ctx The transaction context
      * @param startDate Optional start date for filtering
      * @param endDate Optional end date for filtering
-     * @returns A summary of token usage
+     * @returns Usage summary
      */
+    @Transaction(false)
     async Summary(ctx: Context, startDate?: string, endDate?: string): Promise<UsageSummary> {
         const selector: {
             docType: string;
@@ -422,25 +478,26 @@ class CoconikoCoinContract extends Contract {
     }
 
     /**
-     * Transfers tokens from the current client to another account
+     * Transfers tokens to another user
      * @param ctx The transaction context
-     * @param to The destination account ID
+     * @param to The recipient's ID
      * @param amount The amount to transfer
-     * @returns The transfer event
+     * @returns The transfer result
      */
+    @Transaction()
     async Transfer(ctx: Context, to: string, amount: string): Promise<Record<string, unknown>> {
-        const from = ctx.clientIdentity.getID();
-        return this.TransferFrom(ctx, from, to, amount);
+        return this.TransferFrom(ctx, ctx.clientIdentity.getID(), to, amount);
     }
 
     /**
-     * Transfers tokens from one account to another
+     * Transfers tokens from one user to another
      * @param ctx The transaction context
-     * @param from The source account ID
-     * @param to The destination account ID
+     * @param from The sender's ID
+     * @param to The recipient's ID
      * @param amount The amount to transfer
-     * @returns The transfer event
+     * @returns The transfer result
      */
+    @Transaction()
     async TransferFrom(ctx: Context, from: string, to: string, amount: string): Promise<Record<string, unknown>> {
         ContractEvent.initEvents();
 

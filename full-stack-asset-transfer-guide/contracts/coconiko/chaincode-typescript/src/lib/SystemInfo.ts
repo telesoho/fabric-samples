@@ -23,7 +23,8 @@ class SystemInfo {
         this.data = {
             docType: SystemInfo.docType(),
             totalSupply: data?.totalSupply ?? 0,
-            totalActiveSupply: data?.totalActiveSupply ?? 0
+            totalActiveSupply: data?.totalActiveSupply ?? 0,
+            totalBurned: data?.totalBurned ?? 0
         };
     }
 
@@ -40,7 +41,8 @@ class SystemInfo {
         return new SystemInfo({
             docType: json.docType,
             totalSupply: Number(json.totalSupply ?? 0),
-            totalActiveSupply: Number(json.totalActiveSupply ?? 0)
+            totalActiveSupply: Number(json.totalActiveSupply ?? 0),
+            totalBurned: Number(json.totalBurned ?? 0)
         });
     }
 

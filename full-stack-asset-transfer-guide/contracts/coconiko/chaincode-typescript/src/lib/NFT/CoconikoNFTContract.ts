@@ -1,4 +1,4 @@
-import { Context, Contract } from 'fabric-contract-api';
+import { Context, Contract, Info, Transaction } from 'fabric-contract-api';
 import { UserInfo } from '../UserInfo';
 import { CoconikoNFT } from './CoconikoNFT';
 import { ContractEvent } from '../ContractEvent';
@@ -8,6 +8,14 @@ import { NFTMetadata } from '../../types';
 /**
  * Contract for managing Coconiko NFTs
  */
+@Info({
+    title: 'CoconikoNFTContract',
+    description: 'Smart contract for managing non-fungible tokens in the Coconiko platform',
+    version: '1.0',
+    license: {
+        name: 'Apache-2.0'
+    }
+})
 class CoconikoNFTContract extends Contract {
 
     /**
@@ -21,6 +29,7 @@ class CoconikoNFTContract extends Contract {
      * Initializes the contract
      * @param ctx The transaction context
      */
+    @Transaction()
     async Initialize(ctx: Context): Promise<void> {
         // Initialization logic if needed
     }
@@ -32,6 +41,7 @@ class CoconikoNFTContract extends Contract {
      * @returns Minted NFT details in JSON format
      * @description Creates NFT record, updates recipient's NFT list, and emits creation event
      */
+    @Transaction()
     async MintNFT(ctx: Context, metadataJson: string): Promise<Record<string, unknown>> {
         ContractEvent.initEvents();
 
@@ -55,6 +65,7 @@ class CoconikoNFTContract extends Contract {
      * @param id NFT ID
      * @returns NFT details in JSON format
      */
+    @Transaction(false)
     async GetNFT(ctx: Context, id: string): Promise<Record<string, unknown>> {
         const nft = await CoconikoNFT.fromState(ctx, id);
         return nft.toJSON();
@@ -68,6 +79,7 @@ class CoconikoNFTContract extends Contract {
      * @param nftId The ID of the NFT to transfer
      * @returns The updated NFT object
      */
+    @Transaction()
     async TransferNFT(ctx: Context, from: string, to: string, nftId: string): Promise<Record<string, unknown>> {
         ContractEvent.initEvents();
 
