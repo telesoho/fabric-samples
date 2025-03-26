@@ -95,6 +95,7 @@ console: operator
 operator-crds: check-kube
     kubectl apply -k https://github.com/hyperledger-labs/fabric-operator.git/config/crd
 
+# Install the Prometheus operator and CRDs
 monitoring: check-setup
     # you also can use following command to download all files of setup 
     # curl -s https://api.github.com/repos/prometheus-operator/kube-prometheus/contents/manifests/setup | jq -r '.[].download_url' | xargs wge
@@ -107,13 +108,16 @@ monitoring: check-setup
         --namespace=monitoring
     kubectl apply -f kube-prometheus/manifests
 
+# Uninstall the Prometheus operator and CRDs
 unmonitoring:
     #!/bin/bash
     kubectl delete --ignore-not-found=true -f kube-prometheus/manifests/ -f kube-prometheus/manifests/setup
 
+# Deploy the Ambs service
 ambs:
     kubectl apply -f ambs.telesoho.com.yaml
 
+# Uninstall the Ambs service
 unambs:
     kubectl delete -f ambs.telesoho.com.yaml
 
@@ -254,6 +258,49 @@ debugcc:
     set -x && peer lifecycle chaincode approveformyorg --channelID mychannel -o $ORDERER_ENDPOINT --name asset-transfer -v 0 --package-id $CHAINCODE_ID --sequence 1 --connTimeout 15s && { set +x; } 2>/dev/null
     echo
     set -x && peer lifecycle chaincode commit --channelID mychannel -o $ORDERER_ENDPOINT --name asset-transfer -v 0 --sequence 1  --connTimeout 15s && { set +x; } 2>/dev/null
+    echo
+    set -x && peer lifecycle chaincode querycommitted --channelID=mychannel && { set +x; } 2>/dev/null
+    echo
+    popd
+
+    cat << CC_EOF >> $CFG/org1admin.env
+    export CHAINCODE_SERVER_ADDRESS=0.0.0.0:9999
+    export CHAINCODE_ID=${CHAINCODE_ID}
+    CC_EOF
+
+    echo "Added CHAINCODE_ID and CHAINCODE_SERVER_ADDRESS to org1admin.env"
+    echo
+    echo '   source $WORKSHOP_PATH/_cfg/uf/org1admin.env'
+
+# debug coconiko chaincode:
+debugcc_coconiko:
+    #!/bin/bash
+    set -e -o pipefail
+
+    export CFG=$CWDIR/_cfg/uf
+
+    CHAINCODE_NAME=coconiko
+
+    pushd $CWDIR/contracts/${CHAINCODE_NAME}/chaincode-typescript
+
+    # this is the ip address the peer will use to talk to the CHAINCODE_ID
+    # remember this is relative from where the peer is running.
+    export CHAINCODE_SERVER_ADDRESS=host.docker.internal:9999
+    export CHAINCODE_ID=$(weft chaincode package caas --path . --label ${CHAINCODE_NAME} --address ${CHAINCODE_SERVER_ADDRESS} --archive ${CHAINCODE_NAME}.tgz --quiet)
+    export CORE_PEER_LOCALMSPID=org1MSP
+    export CORE_PEER_MSPCONFIGPATH=$CFG/_msp/org1/org1admin/msp
+    export CORE_PEER_ADDRESS=org1peer-api.127-0-0-1.nip.io:8080
+    export CORE_PEER_CLIENT_CONNTIMEOUT=15s
+    export CORE_PEER_DELIVERYCLIENT_CONNTIMEOUT=15s
+    export ORDERER_ENDPOINT=orderer-api.127-0-0-1.nip.io:8080
+
+    echo "CHAINCODE_ID=${CHAINCODE_ID}"
+
+    set -x && peer lifecycle chaincode install ${CHAINCODE_NAME}.tgz &&     { set +x; } 2>/dev/null
+    echo
+    set -x && peer lifecycle chaincode approveformyorg --channelID mychannel -o $ORDERER_ENDPOINT --name ${CHAINCODE_NAME} -v 0 --package-id $CHAINCODE_ID --sequence 1 --connTimeout 15s && { set +x; } 2>/dev/null
+    echo
+    set -x && peer lifecycle chaincode commit --channelID mychannel -o $ORDERER_ENDPOINT --name ${CHAINCODE_NAME} -v 0 --sequence 1  --connTimeout 15s && { set +x; } 2>/dev/null
     echo
     set -x && peer lifecycle chaincode querycommitted --channelID=mychannel && { set +x; } 2>/dev/null
     echo
