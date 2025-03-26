@@ -1,0 +1,24 @@
+{
+	"name": "coconiko",
+	"version": "1.0.0",
+	"description": "coconiko chaincode implemented in javascript",
+	"main": "index.js",
+	"engines": {
+		"node": ">=18"
+	},
+	"scripts": {
+		"start": "fabric-chaincode-node start",
+		"lint": "eslint *.js */**.js",
+		"test": ""
+	},
+	"engine-strict": true,
+    "author": "sdl",
+    "license": "MIT",	
+	"dependencies": {
+		"fabric-contract-api": "~2.5",
+		"fabric-shim": "~2.5"
+	},
+	"devDependencies": {
+		"eslint": "^8.57.0"
+	}
+}

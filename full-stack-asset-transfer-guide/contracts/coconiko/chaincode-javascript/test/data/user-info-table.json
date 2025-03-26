@@ -1,0 +1,517 @@
+{
+    "result": [
+      {
+        "account_id": "0x0",
+        "user_id": "system",
+        "role": "admin",
+        "balance": 0,
+        "active": false,
+        "created_at": "2025-02-12T23:33:43.914Z",
+        "updated_at": "2025-02-12T23:33:43.914Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=15.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "15.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": false,
+        "created_at": "2025-02-12T23:33:44.798Z",
+        "updated_at": "2025-02-12T23:33:44.798Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=44.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "44.coconiko",
+        "role": "user",
+        "balance": 1100,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.812Z",
+        "updated_at": "2025-02-12T23:33:44.812Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=45.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "45.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": false,
+        "created_at": "2025-02-12T23:33:44.816Z",
+        "updated_at": "2025-02-12T23:33:44.816Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=46.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "46.coconiko",
+        "role": "user",
+        "balance": 200,
+        "active": false,
+        "created_at": "2025-02-12T23:33:44.818Z",
+        "updated_at": "2025-02-12T23:33:44.818Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=28.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "28.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.812Z",
+        "updated_at": "2025-02-12T23:33:44.812Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=47.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "47.coconiko",
+        "role": "user",
+        "balance": 200,
+        "active": false,
+        "created_at": "2025-02-12T23:33:44.821Z",
+        "updated_at": "2025-02-12T23:33:44.821Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=38.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "38.coconiko",
+        "role": "user",
+        "balance": 5680,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.819Z",
+        "updated_at": "2025-02-12T23:33:44.819Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=37.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "37.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.821Z",
+        "updated_at": "2025-02-12T23:33:44.821Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=48.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "48.coconiko",
+        "role": "user",
+        "balance": 1092,
+        "active": false,
+        "created_at": "2025-02-12T23:33:44.822Z",
+        "updated_at": "2025-02-12T23:33:44.822Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=51.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "51.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.824Z",
+        "updated_at": "2025-02-12T23:33:44.824Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=53.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "53.coconiko",
+        "role": "user",
+        "balance": 500,
+        "active": false,
+        "created_at": "2025-02-12T23:33:44.825Z",
+        "updated_at": "2025-02-12T23:33:44.825Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=54.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "54.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": false,
+        "created_at": "2025-02-12T23:33:44.825Z",
+        "updated_at": "2025-02-12T23:33:44.825Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=18.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "18.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.828Z",
+        "updated_at": "2025-02-12T23:33:44.828Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=55.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "55.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": false,
+        "created_at": "2025-02-12T23:33:44.829Z",
+        "updated_at": "2025-02-12T23:33:44.829Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=57.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "57.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.834Z",
+        "updated_at": "2025-02-12T23:33:44.834Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=35.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "35.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": false,
+        "created_at": "2025-02-12T23:33:44.837Z",
+        "updated_at": "2025-02-12T23:33:44.837Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=56.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "56.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.838Z",
+        "updated_at": "2025-02-12T23:33:44.838Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=8.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "8.coconiko",
+        "role": "user",
+        "balance": 1800,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.838Z",
+        "updated_at": "2025-02-12T23:33:44.838Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=CocoNiko01.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "CocoNiko01.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": false,
+        "created_at": "2025-02-12T23:33:44.839Z",
+        "updated_at": "2025-02-12T23:33:44.839Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=Kaiya.wang.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "Kaiya.wang.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.840Z",
+        "updated_at": "2025-02-12T23:33:44.840Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=NDIT.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "NDIT.coconiko",
+        "role": "user",
+        "balance": 10,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.840Z",
+        "updated_at": "2025-02-12T23:33:44.840Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=NDIT01.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "NDIT01.coconiko",
+        "role": "user",
+        "balance": 440,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.841Z",
+        "updated_at": "2025-02-12T23:33:44.841Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=NDIT02.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "NDIT02.coconiko",
+        "role": "user",
+        "balance": 1839,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.842Z",
+        "updated_at": "2025-02-12T23:33:44.842Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=41.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "41.coconiko",
+        "role": "user",
+        "balance": 1100,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.842Z",
+        "updated_at": "2025-02-12T23:33:44.842Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=NDIT04.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "NDIT04.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.843Z",
+        "updated_at": "2025-02-12T23:33:44.843Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=NDIT05.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "NDIT05.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.844Z",
+        "updated_at": "2025-02-12T23:33:44.844Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=NDIT03.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "NDIT03.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.844Z",
+        "updated_at": "2025-02-12T23:33:44.844Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=NDIT06.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "NDIT06.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.845Z",
+        "updated_at": "2025-02-12T23:33:44.845Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=40.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "40.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": false,
+        "created_at": "2025-02-12T23:33:44.844Z",
+        "updated_at": "2025-02-12T23:33:44.844Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=43.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "43.coconiko",
+        "role": "user",
+        "balance": 100,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.846Z",
+        "updated_at": "2025-02-12T23:33:44.846Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=NDIT07.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "NDIT07.coconiko",
+        "role": "user",
+        "balance": 1000,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.848Z",
+        "updated_at": "2025-02-12T23:33:44.848Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=Test0120.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "Test0120.coconiko",
+        "role": "user",
+        "balance": 6,
+        "active": false,
+        "created_at": "2025-02-12T23:33:44.848Z",
+        "updated_at": "2025-02-12T23:33:44.848Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=Test01201.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "Test01201.coconiko",
+        "role": "user",
+        "balance": 5,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.849Z",
+        "updated_at": "2025-02-12T23:33:44.849Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=chengbo.wang.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "chengbo.wang.coconiko",
+        "role": "user",
+        "balance": 1000,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.849Z",
+        "updated_at": "2025-02-12T23:33:44.849Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=39.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "39.coconiko",
+        "role": "user",
+        "balance": 500,
+        "active": false,
+        "created_at": "2025-02-12T23:33:44.849Z",
+        "updated_at": "2025-02-12T23:33:44.849Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=coconikoTest01.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "coconikoTest01.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.850Z",
+        "updated_at": "2025-02-12T23:33:44.850Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=coconikoTest02.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "coconikoTest02.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.850Z",
+        "updated_at": "2025-02-12T23:33:44.850Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=coconikoTest02y.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "coconikoTest02y.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.850Z",
+        "updated_at": "2025-02-12T23:33:44.850Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=coconiko_base_manager.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "coconiko_base_manager.coconiko",
+        "role": "admin",
+        "balance": 20343,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.851Z",
+        "updated_at": "2025-02-12T23:33:44.851Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=histest.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "histest.coconiko",
+        "role": "user",
+        "balance": 100,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.851Z",
+        "updated_at": "2025-02-12T23:33:44.851Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=ndit01.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "ndit01.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.851Z",
+        "updated_at": "2025-02-12T23:33:44.851Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=ndit02.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "ndit02.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.851Z",
+        "updated_at": "2025-02-12T23:33:44.851Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=zihan.yu.Test.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "zihan.yu.Test.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.855Z",
+        "updated_at": "2025-02-12T23:33:44.855Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=ndit03.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "ndit03.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.851Z",
+        "updated_at": "2025-02-12T23:33:44.851Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=すずきてすと.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "すずきてすと.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.855Z",
+        "updated_at": "2025-02-12T23:33:44.855Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=ndit06.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "ndit06.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.853Z",
+        "updated_at": "2025-02-12T23:33:44.853Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=test.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "test.coconiko",
+        "role": "user",
+        "balance": 10,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.853Z",
+        "updated_at": "2025-02-12T23:33:44.853Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=朝ご飯.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "朝ご飯.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.855Z",
+        "updated_at": "2025-02-12T23:33:44.855Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=sgc1.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "sgc1.coconiko",
+        "role": "user",
+        "balance": 700,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.853Z",
+        "updated_at": "2025-02-12T23:33:44.853Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=朝ご飯2.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "朝ご飯2.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.856Z",
+        "updated_at": "2025-02-12T23:33:44.856Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=ndit07.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "ndit07.coconiko",
+        "role": "user",
+        "balance": 300,
+        "active": false,
+        "created_at": "2025-02-12T23:33:44.853Z",
+        "updated_at": "2025-02-12T23:33:44.853Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=モリシタ.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "モリシタ.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.855Z",
+        "updated_at": "2025-02-12T23:33:44.855Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=test0114.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "test0114.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.854Z",
+        "updated_at": "2025-02-12T23:33:44.854Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=yzh1.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "yzh1.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.854Z",
+        "updated_at": "2025-02-12T23:33:44.854Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=yzhtest.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "yzhtest.coconiko",
+        "role": "user",
+        "balance": 0,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.854Z",
+        "updated_at": "2025-02-12T23:33:44.854Z"
+      },
+      {
+        "account_id": "x509::/OU=client/CN=zihan.yu-Test01.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+        "user_id": "zihan.yu-Test01.coconiko",
+        "role": "user",
+        "balance": 1490,
+        "active": true,
+        "created_at": "2025-02-12T23:33:44.854Z",
+        "updated_at": "2025-02-12T23:33:44.854Z"
+      }
+    ]
+}
