@@ -195,6 +195,18 @@ function build_cc() {
   docker push $CHAINCODE_IMAGE
 }
 
+function build_cc_typescript() {
+  CONTAINER_REGISTRY=$WORKSHOP_INGRESS_DOMAIN:5000
+  CHAINCODE_IMAGE=$CONTAINER_REGISTRY/$CHAINCODE_NAME
+
+  # Build the chaincode image
+  ARCH=$(uname -m | sed 's/x86_64/amd64/g' | sed 's/aarch64/arm64/g')
+  docker build --build-arg TARGETARCH=${ARCH} -t $CHAINCODE_IMAGE contracts/$CHAINCODE_NAME/chaincode-typescript
+
+  # Push the image to the insecure container registry
+  docker push $CHAINCODE_IMAGE
+}
+
 function prepare_cc() {
   IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $CHAINCODE_IMAGE | cut -d'@' -f2)
   infrastructure/pkgcc.sh -l $CHAINCODE_NAME -n localhost:5000/$CHAINCODE_NAME -d $IMAGE_DIGEST
@@ -285,6 +297,30 @@ COUNT=$(kubectl -n ${WORKSHOP_NAMESPACE} get pods -l app.kubernetes.io/created-b
 # one pod per peer + header line
 [[ $COUNT -eq 5 ]]
 
+###############################################################################
+# 31 : build, tag, push, install
+###############################################################################
+
+CHANNEL_NAME=mychannel
+VERSION=v1.0.0
+SEQUENCE=1
+
+CHAINCODE_NAME=coconiko
+CHAINCODE_PACKAGE=${CHAINCODE_NAME}.tgz
+
+build_cc_typescript
+prepare_cc
+install_cc
+check_cc_meta
+
+# cc pod is up - is there a selector for the target sequence / rev?
+kubectl -n test-network describe pods -l app.kubernetes.io/created-by=fabric-builder-k8s
+
+kubectl -n ${WORKSHOP_NAMESPACE} describe pods -l app.kubernetes.io/created-by=fabric-builder-k8s
+COUNT=$(kubectl -n ${WORKSHOP_NAMESPACE} get pods -l app.kubernetes.io/created-by=fabric-builder-k8s | wc -l)
+
+# one pod per peer + header line
+[[ $COUNT -eq 5 ]]
 
 ###############################################################################
 # 31 : build, tag, push, install
