@@ -320,7 +320,7 @@ kubectl -n ${WORKSHOP_NAMESPACE} describe pods -l app.kubernetes.io/created-by=f
 COUNT=$(kubectl -n ${WORKSHOP_NAMESPACE} get pods -l app.kubernetes.io/created-by=fabric-builder-k8s | wc -l)
 
 # one pod per peer + header line
-[[ $COUNT -eq 5 ]]
+[[ $COUNT -eq 7 ]]
 
 ###############################################################################
 # 31 : build, tag, push, install
