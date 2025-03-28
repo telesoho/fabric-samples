@@ -1,6 +1,6 @@
 import { Application, Request, Response } from "express";
-import { Connection } from "./connection";
-import { OdooUser } from "./contract-odoo-user";
+import { Connection } from "../connection";
+import { OdooUser } from "./odoo-user";
 
 export class OdooUserRouter {
     public routes(app: Application): void {

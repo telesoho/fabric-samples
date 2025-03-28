@@ -1,9 +1,3 @@
-/*
- * Copyright IBM Corp. All Rights Reserved.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import { CommitError, Contract, StatusCode } from '@hyperledger/fabric-gateway';
 import { TextDecoder } from 'util';
 

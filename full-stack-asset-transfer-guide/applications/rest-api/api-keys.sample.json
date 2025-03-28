@@ -1,0 +1,14 @@
+[
+    {
+        "app_id": "bepay",
+        "api_key": "bepay_key",
+        "share_user": true,
+        "admin_as_default": true
+    },
+    {
+        "app_id": "coconiko",
+        "api_key": "coconiko_key",
+        "share_user": false,
+        "admin_as_default": false
+    }
+]

@@ -1,0 +1,1261 @@
+openapi: 3.0.1
+info:
+  title: Coconiko API
+  version: 1.1.0
+  description: |
+    FabricネットワークにおけるユーザーとCoconikoのコインとNFTなどを管理するためのAPI。
+
+    アプリからの呼び出しに最適化しており、ヘッダーに`X-API-Key`とログインしている`userId`を設定し、
+    APIを呼び出す仕様となっています。
+    - `X-Api-Key`で呼び出し元のシステムを識別しています
+    - `userId`でログインしているユーザーを識別しています
+
+    各APIの必要な認証情報は各APIの右側のロックアイコンで確認できます
+    
+    注意：「ユーザーID」と「アカウントID」が違います。
+    - 「アカウントID」はFabricネットワーク上でユーザーを識別するIDです、新規ユーザーを登録する時に割り当てられます。`0x0`を保留しています。
+    - 「ユーザーID」はアプリ側でユーザーを識別するIDです
+externalDocs:
+  url: https://swagger.io/docs/specification/v3_0/about/
+paths:
+  /ready:
+    get:
+      tags:
+        - ヘルスチェック
+      summary: クラウド環境で使用するヘルスエンドポイント
+      responses:
+        '200':
+          description: 正常
+  /live:
+    get:
+      tags:
+        - ヘルスチェック
+      summary: Fabricネットワークの健全性チェック
+      responses:
+        '200':
+          description: 正常
+  /api/coconiko/user:
+    put:
+      tags:
+        - Coconiko
+      summary: 新規ユーザーを登録
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - role
+              properties:
+                username:
+                  type: string
+                role:
+                  type: string
+                  description: ユーザーの役割
+                  enum:
+                    - user
+                    - admin
+              example:
+                username: "test"
+                role: "user"
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: 正常
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_name:
+                    type: string
+                    description: ユーザー名
+                  app_id:
+                    type: string
+                    description: アプリケーションID
+                  account:
+                    type: object
+                    description: アカウント情報
+                    properties:
+                      id:
+                        type: string
+                        description: アカウントID
+                      role:
+                        type: string
+                        description: ユーザーの役割
+                  timestamp:
+                    type: string
+                    format: date-time
+                example:
+                  user_name: "test"
+                  app_id: "coconiko"
+                  account:
+                    id: "x509::/OU=client/CN=test.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA"
+                    role: "user"
+                  timestamp: "2022-01-01T00:00:00.000Z"
+        '201':
+          description: ユーザーが存在しています
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+    get:
+      tags:
+        - Coconiko
+      summary: ユーザー情報を取得
+      security:
+        - ApiKeyAuth: []
+          userId: []
+      responses:
+        '200':
+          description: 正常
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    $ref: '#/components/schemas/UserInfo'
+              example: {
+                result: {
+                  userId: "test",
+                  accountid: "x509::/OU=client/CN=test.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+                  role: "user",
+                  balance: 0,
+                  activate: true
+                }
+              }
+    post:
+      tags:
+        - Coconiko
+      summary: ユーザー情報を更新
+      security:
+        - ApiKeyAuth: []
+          userId: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - active
+              properties:
+                active:
+                  type: boolean
+                  description: 有効
+      responses:
+        '200':
+          description: 正常
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    $ref: '#/components/schemas/UserInfo'
+              example: {
+                result: {
+                  userId: "test",
+                  accountid: "x509::/OU=client/CN=test.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+                  role: "user",
+                  balance: 0,
+                  activate: true
+                }
+              }
+  /api/coconiko/Mint:
+    post:
+      tags:
+        - Coconiko Coin
+      summary: コインを発行
+      description: ログインしているユーザーによるコインの発行
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amount
+              properties:
+                amount:
+                  type: integer
+                  description: コインの発行数量
+                days:
+                  type: integer
+                  description: 有効期限（日数）、0にすると有効期限なし
+                  default: 0
+              example:
+                amount: 100
+      security:
+        - ApiKeyAuth: []
+          userId: []
+      responses:
+        '200':
+          description: 正常
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    description: "アカウントIDをキーとしてコインの残高を格納したオブジェクト"
+                example:
+                  result: {
+                    "docType": "coconiko-coin",
+                    "amount": 100,
+                    "owner": "x509::/OU=client/CN=test.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+                    "burned": false
+                  }
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/coconiko/BalanceOf:
+    post:
+      tags:
+        - Coconiko Coin
+      summary: 複数ユーザーの残高を取得
+      description: 注意：アカウントIDが存在しない場合は、残高も0となります
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - owners
+              properties:
+                owners:
+                  type: array
+                  items:
+                    type: string
+                  description: アカウントIDの配列
+                  example: [
+                    "x509::/OU=client/CN=user1.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+                    "x509::/OU=client/CN=user2.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+                    "x509::/OU=client/CN=user3.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA"
+                    ]
+      security:
+        - ApiKeyAuth: []
+          userId: []
+      responses:
+        '200':
+          description: 正常
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {
+                  result: {
+                    "x509::/OU=client/CN=user1.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA": 100,
+                    "x509::/OU=client/CN=user2.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA": 200,
+                    "x509::/OU=client/CN=user3.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA": 300
+                  }
+                }
+                properties:
+                  result:
+                    type: object
+                    description: "アカウントIDをキーとしてコインの残高を格納したオブジェクト"
+                    additionalProperties:
+                      type: integer
+                      description: コインの残高
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time          
+  /api/coconiko/Transfer:
+    post:
+      tags:
+        - Coconiko Coin
+      summary: コインの転送
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - to
+                - amount
+              properties:
+                to:
+                  type: string
+                  description: 転送先アカウントID
+                  example: "x509::/OU=client/CN=user2.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA"
+                amount:
+                  type: integer
+                  description: コインの数量
+                  example: 10
+      security: 
+        - ApiKeyAuth: []
+          userId: []
+      responses:
+        '200':
+          description: 正常
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+  /api/coconiko/TransferFrom:
+    post:
+      tags:
+        - Coconiko Coin
+      summary: コインの転送（管理者用）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - from
+                - to
+                - amount
+              properties:
+                from:
+                  type: string
+                  description: 転送元アカウントID
+                  example: "x509::/OU=client/CN=user1.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA"
+                to:
+                  type: string
+                  description: 転送先アカウントID
+                  example: "x509::/OU=client/CN=user2.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA"
+                amount:
+                  type: integer
+                  description: 転送数量
+                  example: 10
+      security:
+        - ApiKeyAuth: []
+          userId: []
+      responses:
+        '200':
+          description: 正常
+  /api/coconiko/TotalSupply:
+    get:
+      tags:
+        - Coconiko Coin
+      summary: コイン発行総量の取得
+      description: |
+        コイン発行総量の取得
+
+        例（注意）：
+        - 集計の開始日時が2024-12-27、集計の終了日時が2024-12-28の場合、集計期間が>=2024-12-28T00:00:00.000Z且つ<=2024-12-28T00:00:00.000Zになる
+        - 集計の開始日時がnull、集計の終了日時が2024-12-28T10:10:10の場合、集計期間が<=2024-12-28T10:10:10.000Zになる
+        - 集計の開始日時と集計の終了日時が設定されない場合は、集計期間が現時点までのレコードを集計する。
+ 
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date-time
+          description: 集計の開始日時(UTC時間)
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date-time
+          description: 集計の終了日時(UTC時間)
+        - in: query
+          name: activeUserOnly
+          schema:
+            type: boolean
+            description: 有効ユーザーのみを集計するかどうか
+            default: true
+      responses:
+        '200':
+          description: 正常
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      totalSupply:
+                        type: integer
+                        description: 発行されたコイン総量
+                example: {
+                  result: {
+                    "totalSupply": 1000
+                  }
+                }
+  /api/coconiko/BurnExpired:
+    post:
+      tags:
+        - Coconiko Coin
+      summary: 有効期限切れたコインを回収
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - owner
+                - expirationDate
+              properties:
+                owner:
+                  type: string
+                  description: 所有者アカウントID
+                expirationDate:
+                  type: string
+                  description: 有効期限
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: 正常
+  /api/coconiko/ClientAccountEventHistory:
+    get:
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date-time
+          description: 開始日時(UTC時間)
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date-time
+          description: 終了日時(UTC時間)
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          description: 1ページあたりのアイテム数（設定されない場合は全量取得）
+        - in: query
+          name: skip
+          schema:
+            type: integer
+          description: スキップするアイテム数（設定されない場合はスキップが0になる）
+      tags:
+        - Coconiko Coin
+      summary: ユーザーのトランザクションイベント履歴（指定期間）の取得
+      description: |
+        トランザクションイベントデーターは下記の構成があいます。
+        - timestamp: トランザクションイベント発生時間
+        - from: 転送元アカウントID。この値が0x0であるの場合は、システムがユーザーにコインを新規発行したことを示します。
+        - to: 転送先アカウントID。この値が`0x0`である場合はコインを回収したことを示します。
+        - amount: コイン数
+
+        利用方法：
+        ```js
+          # ページ１を取得する
+          const pageSize = 25;
+          const currentPage = 1;
+          const skip = currentPage * pageSize;
+          var res = await fetch(`api/coconiko/ClientAccountEventHistory?startDate=2024-12-27&endDate=2024-12-30&pageSize=${pageSize}&skip=${skip}`)
+
+          # 全量データーを取得する
+          var res = await fetch(`api/coconiko/ClientAccountEventHistory?startDate=2024-12-27&endDate=2024-12-30`)
+        ```
+      security:
+        - ApiKeyAuth: []
+          userId: []
+      responses:
+        '200':
+          description: 正常
+          content:
+            application/json:
+              schema:
+                type: object
+                example: 
+                  {
+                    "result": [{
+                        "type": "received",
+                        "timestamp": "2024-12-27T09:32:41.570Z",
+                        "from": "0x0",
+                        "to": "x509::/OU=client/CN=admin.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+                        "amount": 100,
+                      },
+                      {
+                        "type": "spend",
+                        "timestamp": "2024-12-28T07:03:31.374Z",
+                        "from": "x509::/OU=client/CN=admin.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+                        "to": "0x0",
+                        "amount": 10,
+                      },
+                      {
+                        "type": "spend",
+                        "timestamp": "2024-12-29T08:28:46.917Z",
+                        "from": "x509::/OU=client/CN=admin.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+                        "to": "x509::/OU=client/CN=userB.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+                        "amount": 10,
+                      }]
+                  }
+                properties:
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          description: トランザクションイベント名称（spend, received）
+                        timestamp:
+                          type: string
+                          format: date-time
+                          description: トランザクションイベント発生時間
+                        from:
+                          type: string
+                          description: 転送元アカウントID
+                        to:
+                          type: string
+                          description: 転送先アカウントID
+                        amount:
+                          type: string
+                          description: コイン数
+  /api/coconiko/ClientAccountEventHistory/Count:
+    get:
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date-time
+          description: 開始日時(UTC時間)
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date-time
+          description: 終了日時(UTC時間)
+      tags:
+        - Coconiko Coin
+      summary: ユーザーのトランザクションイベント履歴の総数（指定期間）を取得する
+      description: ""
+      security:
+        - ApiKeyAuth: []
+          userId: []
+      responses:
+        '200':
+          description: 正常
+          content:
+            application/json:
+              schema:
+                type: object
+                example: 
+                  {
+                    "result": { count: 100}
+                  }
+  /api/coconiko/Summary:
+    get:
+      tags:
+        - Coconiko Coin
+      security:
+        - ApiKeyAuth: []
+          userId: []
+      summary: 有効ユーザーの集計情報を取得する
+      description: |
+        有効ユーザーの集計情報を取得する（集計の開始日時 <= 集計期間 <= 集計の終了日時）
+
+        例（注意）：
+        - 集計の開始日時が2024-12-27、集計の終了日時が2024-12-28の場合、集計期間が>=2024-12-28T00:00:00.000Z且つ<=2024-12-28T00:00:00.000Zになる
+        - 集計の開始日時がnull、集計の終了日時が2024-12-28T10:10:10の場合、集計期間が<=2024-12-28T10:10:10.000Zになる
+        - 集計の開始日時と集計の終了日時が設定されない場合は、集計期間が現時点までのレコードを集計する。
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date-time
+          description: 集計の開始日時(UTC時間)
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date-time
+          description: 集計の終了日時(UTC時間)
+      responses:
+        '200':
+          description: 正常
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      totalMinted:
+                        type: integer
+                        description: 有効ユーザーの獲得コイン合計
+                      totalUsed:
+                        type: integer
+                        description: 有効ユーザーの消費コイン合計
+  /api/coconiko/nft/Mint:
+    post:
+      tags:
+        - Coconiko NFT
+      summary: NFTを新規発行
+      description: メタデータを指定して新しいNFTを発行
+      security:
+        - ApiKeyAuth: []
+          userId: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - metadata
+              properties:
+                metadata:
+                  type: object
+                  description: NFTメタデータ
+                  properties:
+                    name:
+                      type: string
+                      example: "限定版アート作品"
+                    price:
+                      type: number
+                      example: 100
+                    description: 
+                      type: string
+                      example: "デジタルアート作品の限定版"
+                    image:
+                      type: string
+                      format: uri
+                      example: "https://example.com/artwork.png"
+      responses:
+        '200':
+          description: NFT発行成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                example:
+                  "result": {
+                    "docType": "coconiko-nft",
+                    "id": "nft_2ta80u30t9xm82lgi77",
+                    "owner": "x509::/OU=client/CN=test.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+                    "creator": "x509::/OU=client/CN=test.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+                    "metadata": {
+                      "name": "限定版アート作品",
+                      "price": 100,
+                      "description": "デジタルアート作品の限定版",
+                      "image": "https://example.com/artwork.png"
+                    },
+                    "created": "2025-03-10T05:00:43.171Z",
+                    "lastUpdated": "2025-03-10T05:00:43.171Z",
+                    "burned": false
+                  }
+  /api/coconiko/nft/Transfer:
+    post:
+      tags:
+        - Coconiko NFT
+      summary: NFTを転送
+      description: 指定したNFTの所有権を転送
+      security:
+        - ApiKeyAuth: []
+          userId: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tokenId
+                - to
+              properties:
+                tokenId:
+                  type: string
+                  description: NFTトークンID
+                  example: "NFT_001"
+                from:
+                  type: string
+                  description: 送信元アカウントID（オプション）、なければ登録しているユーザーのアカウントIDを利用します。
+                  example: "x509::/OU=client/CN=user1.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA"
+                to:
+                  type: string
+                  description: 送信先アカウントID
+                  example: "x509::/OU=client/CN=user2.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA"
+      responses:
+        '200':
+          description: 転送成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+  /api/coconiko/nft/{tokenId}:
+    get:
+      tags:
+        - Coconiko NFT
+      summary: NFT情報を取得
+      description: 指定したNFTの詳細情報を取得
+      security:
+        - ApiKeyAuth: []
+          userId: []
+      parameters:
+        - in: path
+          name: tokenId
+          schema:
+            type: string
+          required: true
+          description: NFTトークンID
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      tokenId:
+                        type: string
+                      metadata:
+                        type: object
+                      currentOwner:
+                        type: string
+                      created:
+                        type: string
+                        format: date-time
+                      transactionHistory:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            from:
+                              type: string
+                            to:
+                              type: string
+                            timestamp:
+                              type: string
+                              format: date-time
+                example:
+                  result:
+                    tokenId: "NFT_001"
+                    metadata:
+                      name: "限定版アート作品"
+                      price: 100
+                      description: "デジタルアート作品の限定版"
+                      image: "https://example.com/artwork.png"
+                    currentOwner: "x509::/OU=client/CN=user2.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA"
+                    created: "2024-01-01T00:00:00.000Z"
+                    transactionHistory:
+                      - from: "0x0"
+                        to: "x509::/OU=client/CN=user1.coconiko..."
+                        timestamp: "2024-01-01T00:00:00.000Z"
+                      - from: "x509::/OU=client/CN=user1.coconiko..."
+                        to: "x509::/OU=client/CN=user2.coconiko..."
+                        timestamp: "2024-01-02T00:00:00.000Z"
+  /api/coconiko/nft/my/NFTs:
+    get:
+      tags:
+        - Coconiko NFT
+      summary: ユーザーのNFT一覧情報を取得
+      description: ユーザーのNFT一覧情報を取得
+      security:
+        - ApiKeyAuth: []
+          userId: []
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      type: object
+                example:
+                  result:
+                    [
+                      {
+                        "nft_id": "nft_2ta80u30t9xm82lgi77",
+                        "owner": "x509::/OU=client/CN=test.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+                        "creator": "x509::/OU=client/CN=test.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+                        "metadata": {
+                          "name": "限定版アート作品",
+                          "price": 100,
+                          "description": "デジタルアート作品の限定版",
+                          "image": "https://example.com/artwork.png"
+                        },
+                        "created_at": "2025-03-10T05:00:43.171Z",
+                        "burned": false
+                      },
+                      {
+                        "id": "nft_2ta80u30t9xm82lgi78",
+                        "owner": "x509::/OU=client/CN=test.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+                        "creator": "x509::/OU=client/CN=test.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+                        "metadata": {
+                          "name": "限定版アート作品",
+                          "price": 200,
+                          "description": "デジタルアート作品の限定版",
+                          "image": "https://example.com/artwork.png"
+                        },
+                        "created_at": "2025-03-10T05:00:43.171Z",
+                        "burned": false
+                      }                      
+                    ]
+  /api/coconiko/voting/MintProposal:
+    post:
+      tags:
+        - Governance Token
+      summary: 新しい投票提案を作成（未実装）
+      description: 新しい投票提案を作成
+      security:
+        - ApiKeyAuth: []
+          userId: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - proposalId
+                - title
+                - options
+                - endDate
+              properties:
+                proposalId:
+                  type: string
+                  description: 提案の一意な識別子
+                title:
+                  type: string
+                  description: 投票タイトル
+                description:
+                  type: string
+                  description: 投票の詳細説明
+                options:
+                  type: array
+                  items: 
+                    type: string
+                  minItems: 2
+                  maxItems: 10
+                  description: 投票選択肢
+                endDate:
+                  type: string
+                  format: date-time
+                  description: 投票締切日時(UTC)
+      responses:
+        '201':
+          description: 投票提案作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VotingProposal'
+
+  /api/coconiko/voting/MintVoteNFT:
+    post:
+      tags:
+        - Governance Token
+      summary: 投票権NFTの発行（未実装）
+      description: 有権者に投票権NFTを発行
+      security:
+        - ApiKeyAuth: []
+          userId: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - proposalId
+              properties:
+                proposalId:
+                  type: string
+                  description: 対象の提案ID
+                voterId:
+                  type: string
+                  description: 有権者アカウントID（デフォルトはリクエストユーザー）
+      responses:
+        '200':
+          description: NFT発行成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VotingNFT'
+
+  /api/coconiko/voting/Cast:
+    post:
+      tags:
+        - Governance Token  
+      summary: NFTを使用して投票を実行（未実装）
+      security:
+        - ApiKeyAuth: []
+          userId: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - proposalId
+                - selectedOption
+                - nftTokenId
+              properties:
+                proposalId:
+                  type: string
+                selectedOption:
+                  type: string
+                  description: 選択したオプションのインデックス（0ベース）
+                nftTokenId:
+                  type: string
+                  description: 使用する投票権NFTのトークンID
+      responses:
+        '200':
+          description: 投票成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  txHash:
+                    type: string
+                    description: ブロックチェーン上のトランザクションハッシュ
+
+  /api/coconiko/voting/Results/{proposalId}:
+    get:
+      tags:
+        - Governance Token
+      summary: 投票結果の取得（未実装）
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 投票結果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VotingResult'
+  /api/coconiko/queryAssetsWithPagination:
+    post:
+      tags:
+        - Debug
+      summary: アセットの取得（ページングあり）
+      description: |
+        クエリ文字列に基づいてページングされたアセットを返す。詳細は、[CouchDB 検索方法](https://docs.couchdb.org/en/stable/api/database/find.html#find-selectors)を参照。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+                - pageSize
+              properties:
+                query:
+                  type: object
+                  description: CouchDBクエリ文字列（JSON形式）
+                  example: {
+                    "selector": {
+                      "docType": "coconiko-coin",
+                      "burned": false
+                    }
+                  }
+                pageSize:
+                  type: integer
+                  description: 1ページあたりのアイテム数
+                  minimum: 1
+                  maximum: 100000
+                  example: 100
+                bookmark:
+                  type: string
+                  description: ページング用のブックマーク（前回レスポンスのmetadata.Bookmark）
+                  example: ""
+      security:
+        - ApiKeyAuth: []
+          userId: []
+      responses:
+        '200':
+          description: 正常
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          Bookmark:
+                            type: string
+                            description: 次のページ取得用ブックマーク
+                          RecordsCount:
+                            type: integer
+                            description: 取得レコード数
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            Key:
+                              type: string
+                              description: アセットキー
+                            Record:
+                              type: object
+                              description: アセットレコード
+                example:
+                  result: {
+                    "metadata": {
+                      "Bookmark": "g1AAAABheJzLYWBgYMpgSmHgKy5JLCrJTq2MT8lPzkzJBYqzJRYXpSgY2CqY2P____9_VkKSnH4Gk5AxA4gZgCRQAwCqVRFO",
+                      "RecordsCount": 2
+                    },
+                    "results": [
+                      {
+                        "Key": "COIN_001",
+                        "Record": {
+                          "docType": "coconiko-coin",
+                          "amount": 100,
+                          "owner": "x509::/OU=client/CN=user1.coconiko...",
+                          "burned": false
+                        }
+                      },
+                      {
+                        "Key": "COIN_002",
+                        "Record": {
+                          "docType": "coconiko-coin",
+                          "amount": 200,
+                          "owner": "x509::/OU=client/CN=user2.coconiko...",
+                          "burned": true
+                        }
+                      }
+                    ]
+                  }
+        '400':
+          description: 無効なリクエスト
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/coconiko/postgres/query:
+    post:
+      tags:
+        - Debug
+      summary: PostgreSQLクエリの実行（SELECTのみ）
+      description: |
+        パラメータ化されたPostgreSQL SELECTクエリを実行
+        - SELECTクエリのみ許可
+        - SQLインジェクション防止のためパラメータ化クエリを使用
+        - 生のクエリ結果を返却
+      security:
+        - ApiKeyAuth: []
+          userId: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - queryString
+              properties:
+                queryString:
+                  type: string
+                  description: SELECTクエリ文（$/<param>/形式のパラメータを使用）
+                  example: "SELECT * FROM coconiko.user_info WHERE active = $/active/"
+                params:
+                  type: object
+                  description: クエリパラメータオブジェクト（オプション）
+                  example: { "active": true }
+      responses:
+        '200':
+          description: クエリ成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    description: クエリ結果配列
+                    items:
+                      type: object
+                      additionalProperties: true
+                example:
+                  result: 
+                    - { account_id: "0x0", user_id: "system", role: "admin" }
+                    - { account_id: "x509...", user_id: "test", role: "user" }
+        '400':
+          description: リクエストパラメータ検証失敗
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: "Bad Request"
+                reason: "VALIDATION_ERROR"
+                message: "無効なリクエストボディ"
+                timestamp: "2024-01-01T00:00:00.000Z"
+                errors:
+                  - { msg: "有効なSQL SELECT文である必要があります", param: "queryString" }
+        '500':
+          description: サーバー内部エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+        reason:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        errors:
+          type: array
+          items:
+            type: object
+    Result:
+      type: object
+      properties:
+        result:
+          type: object
+          description: ページングされたクエリ結果
+    UserInfo:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: ユーザーID
+        accountId:
+          type: string
+          description: アカウントID
+        role:
+          type: string
+          description: ユーザーの役割
+        balance:
+          type: integer
+          description: ユーザーの残高
+        active:
+          type: boolean
+          description: ユーザーの有効状態       
+    VotingProposal:
+      type: object
+      properties:
+        proposalId:
+          type: string
+        title:
+          type: string  
+        description:
+          type: string
+        options:
+          type: array
+          items: 
+            type: string
+        totalSupply:
+          type: integer
+          description: 発行済み投票権数
+        endDate:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    VotingNFT:
+      type: object
+      properties:
+        tokenId: 
+          type: string
+        proposalId:
+          type: string
+        voterId:
+          type: string
+        isUsed:
+          type: boolean
+          description: 投票済みかどうか
+        mintedAt:
+          type: string
+          format: date-time
+
+    VotingResult:
+      type: object
+      properties:
+        proposalId:
+          type: string
+        totalVotes:
+          type: integer
+        results:
+          type: object
+          additionalProperties:
+            type: integer
+        invalidVotes:
+          type: integer
+        calculatedAt:
+          type: string
+          format: date-time
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: APPのAPIキー
+    userId:
+      type: apiKey
+      in: header
+      name: userId
+      description: ログインしているユーザーID

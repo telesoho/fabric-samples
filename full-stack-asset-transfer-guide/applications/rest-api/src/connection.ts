@@ -4,6 +4,7 @@ import * as crypto from 'crypto';
 import * as path from 'path';
 
 import { promises as fs } from 'fs';
+import * as config from './config';
 const channelName = envOrDefault('CHANNEL_NAME', 'mychannel');
 const chaincodeName = envOrDefault('CHAINCODE_NAME', 'asset-transfer');
 const odooUserChaincodeName = envOrDefault('CHAINCODE_NAME_ODOO_USER', 'odoo-user');
@@ -11,8 +12,8 @@ const odooUserChaincodeName = envOrDefault('CHAINCODE_NAME_ODOO_USER', 'odoo-use
 const mspId = envOrDefault('MSP_ID', 'Org1MSP');
 //Local development and testing uncomment below code
 const WORKSHOP_CRYPTO =envOrDefault('CRYPTO_PATH', path.resolve(__dirname, '..','..', '..', 'infrastructure', 'sample-network', 'temp'));
-const keyPath = WORKSHOP_CRYPTO + "/enrollments/org1/users/org1user/msp/keystore/key.pem";
-const certPath = WORKSHOP_CRYPTO + "/enrollments/org1/users/org1user/msp/signcerts/cert.pem"
+const keyPath = WORKSHOP_CRYPTO + "/enrollments/org1/users/org1admin/msp/keystore/key.pem";
+const certPath = WORKSHOP_CRYPTO + "/enrollments/org1/users/org1admin/msp/signcerts/cert.pem"
 const tlsCertPath = WORKSHOP_CRYPTO + "/channel-msp/peerOrganizations/org1/msp/tlscacerts/tlsca-signcert.pem";
 
 // //kubenetes certificates file path
@@ -28,6 +29,9 @@ const peerHostAlias = "test-network-org1-peer1-peer.localho.st";
 export class Connection {
     public static contract: Contract;
     public static odooUserContract: Contract;
+    public static coconikoCoinContract: Contract;
+    public static coconikoNFTContract: Contract;
+    public static governanceTokenContract: Contract;
     public init() {
         initFabric();
     }
@@ -63,8 +67,18 @@ async function initFabric(): Promise<void> {
         // Get the smart contract from the network.
         const contract = network.getContract(chaincodeName);
         Connection.contract = contract;
+        
         const odooUserContract = network.getContract(odooUserChaincodeName);
         Connection.odooUserContract = odooUserContract;
+        
+        const coconikoCoinContract = network.getContract(config.coconikoChainCode, config.coconikoCoinContract);
+        Connection.coconikoCoinContract = coconikoCoinContract;
+
+        const coconikoNFTContract = network.getContract(config.coconikoChainCode, config.coconikoNFTContract);
+        Connection.coconikoNFTContract = coconikoNFTContract;
+
+        const governanceTokenContract = network.getContract(config.coconikoChainCode, config.coconikoGovernanceTokenContract);
+        Connection.governanceTokenContract = governanceTokenContract;
 
         // Initialize a set of asset data on the ledger using the chaincode 'InitLedger' function.
         //        await initLedger(contract);

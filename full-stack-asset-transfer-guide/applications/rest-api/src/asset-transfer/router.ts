@@ -1,7 +1,7 @@
 import { Application, Request, Response } from "express";
-import { Connection } from "./connection";
-import { AssetTransfer } from "./contract";
-import { logger } from './logger';
+import { Connection } from "../connection";
+import { AssetTransfer } from "./asset-transfer";
+import { logger } from '../logger';
 
 export class AssetRouter {
     public routes(app: Application): void {
