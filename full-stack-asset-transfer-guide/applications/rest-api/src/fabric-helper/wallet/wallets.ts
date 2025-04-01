@@ -35,7 +35,7 @@ export class Wallets {
 	 * @param {string} [adminDbName="postgres"] The name of the admin database to use for the wallet.
 	 * @returns {Promise<module:fabric-network.Wallet>} A wallet.
 	 */
-	public static async newPostgreSQLWallet(connection: string, dbName: string = "wallet", adminDbName: string = "postgres"): Promise<Wallet> {
+	public static async newPostgreSQLWallet(connection: string, dbName: string, adminDbName: string): Promise<Wallet> {
 		const store = await PostgreSQLWalletStore.newInstance(connection, dbName, adminDbName);
 		return new Wallet(store);
 	}

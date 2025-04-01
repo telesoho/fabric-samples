@@ -197,7 +197,7 @@ export const rateLimitMax = env
 export const walletType = env
   .get('WALLET_TYPE')
   .default('file')
-  .asEnum(['file', 'database'])  
+  .asEnum(['file', 'database', 'memory'])  
 
 /**
  * The path to the wallet
@@ -205,8 +205,8 @@ export const walletType = env
  */
 export const walletPath = env
   .get('WALLET_PATH')
-  .default('./wallet')
-  .example('./wallet')
+  .default('./wallet-data')
+  .example('./wallet-data')
   .asString();
 
 /**

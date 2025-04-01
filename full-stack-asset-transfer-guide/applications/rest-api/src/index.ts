@@ -3,6 +3,7 @@ import app from "./app";
 import * as config from './config';
 import { buildCAClient, createWallet } from './fabric-helper/ca_util';
 import { enrollAdmin } from './fabric-helper/ca_util';
+import { PostgreSQLManager } from './fabric-helper/postgresql_manager';
  
 async function main() {
   logger.info('Creating REST server');
@@ -20,8 +21,17 @@ async function main() {
   // TODO: need to reenroll
   await enrollAdmin(caClient, wallet, config.orgMSPID);
 
+  if(config.postgreSqlUri) {
+    const dbManager = await PostgreSQLManager.create(
+      config.postgreSqlUri, 
+      config.postgreSqlDb!, 
+      config.postgreSqlAdminDb);
+
+    app.locals.dbManager = dbManager;
+  }
+
   logger.info('Starting REST server');
-  const server = app.listen(config.port, "0.0.0.0",() => {
+  const server = app.listen(config.port,() => {
     logger.info('REST server started on port: %d', config.port);
   });
 

@@ -16,6 +16,7 @@ X_API_KEY: {{ca_cert}}
 {}
 
 #### enroll
+## Authorization: Basic $(echo user01:user01pw | base64 -w 0)
 POST https://org1user1:org1user1pw@test-network-org1-ca-ca.localho.st/reenroll HTTP/1.1
 content-type: application/json
 Authorization: Basic b3JnMXVzZXIxOm9yZzF1c2VyMXB3Cg==

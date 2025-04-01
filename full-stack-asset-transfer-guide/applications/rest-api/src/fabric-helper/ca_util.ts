@@ -7,7 +7,6 @@ import {
   CommonConnectionProfileHelper,
   getPEM,
 } from './ccp';
-import path from 'path';
 import { Wallets } from './wallet/wallets';
 import { logger } from '../logger';
 
@@ -209,36 +208,25 @@ const registerAndEnrollUser = async (
 };
 
 
-const buildWallet = async (walletPath: string): Promise<Wallet> => {
+export const createWallet = async (): Promise<Wallet> => {
   // Create a new  wallet : Note that wallet is for managing identities.
   let wallet: Wallet;
-  if(config.postgreSqlUri) {
-    wallet = await Wallets.newPostgreSQLWallet(config.postgreSqlUri, config.postgreSqlDb, config.postgreSqlAdminDb);
-    logger.info(`Built a PostgreSQL wallet at ${config.postgreSqlUri}`);
-  } else if (walletPath) {
-    wallet = await Wallets.newFileSystemWallet(walletPath);
-    logger.info(`Built a file system wallet at ${walletPath}`);
-  } else {
-    wallet = await Wallets.newInMemoryWallet();
-    logger.info('Built an in memory wallet');
+  switch(config.walletType) {
+    case 'database':
+      wallet = await Wallets.newPostgreSQLWallet(config.postgreSqlUri!, config.postgreSqlDb!, config.postgreSqlAdminDb!);
+      logger.info(`Built a PostgreSQL wallet at ${config.postgreSqlUri}`);
+      break;
+    case 'file':
+      wallet = await Wallets.newFileSystemWallet(config.walletPath!);
+      logger.info(`Built a file system wallet at ${config.walletPath}`);
+      break;
+    default:
+      wallet = await Wallets.newInMemoryWallet();
+      logger.info('Built an in memory wallet');
+      break;
   }
   return wallet;
 };
 
-/**
- * Creates an in memory wallet to hold credentials for an Org1 and Org2 user
- *
- * In this sample there is a single user for each MSP ID to demonstrate how
- * a client app might submit transactions for different users
- *
- * Alternatively a REST server could use its own identity for all transactions,
- * or it could use credentials supplied in the REST requests
- */
-export const createWallet = async (): Promise<Wallet> => {
-  const walletPath = path.resolve(process.cwd(), 'wallet-data');
-  const wallet = await buildWallet(walletPath);
-
-  return wallet;
-};
 
 export { buildCAClient, enrollAdmin, registerAndEnrollUser, enrollUser };
