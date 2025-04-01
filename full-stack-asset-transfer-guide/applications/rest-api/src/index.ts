@@ -1,12 +1,24 @@
 import { logger } from './logger';
 import app from "./app";
 import * as config from './config';
+import { buildCAClient, createWallet } from './fabric-helper/ca_util';
+import { enrollAdmin } from './fabric-helper/ca_util';
  
 async function main() {
   logger.info('Creating REST server');
-  // default limit 10
-  
-  logger.info('Adding rate limiter');
+
+  logger.info('Connecting to Fabric network with mspid');
+  const wallet = await createWallet();
+
+  app.locals.wallet = wallet;
+
+  // build an instance of the fabric ca services client based on
+  // the information in the network configuration
+  const caClient = buildCAClient();
+
+  // in a real application this would be done on an administrative flow, and only once
+  // TODO: need to reenroll
+  await enrollAdmin(caClient, wallet, config.orgMSPID);
 
   logger.info('Starting REST server');
   const server = app.listen(config.port, "0.0.0.0",() => {

@@ -1,0 +1,44 @@
+{
+  "name": "test-network",
+  "description": "The network to be in if you like scenario tests, not vegetables",
+  "version": "1.0",
+  "client": {
+    "organization": "Org1",
+    "credentialStore": {
+      "wallet": "test-network-wallet"
+    }
+  },
+  "channels": {
+    "mychannel": {
+      "orderers": [],
+      "peers": [],
+      "chaincodes": []
+    }
+  },
+  "organizations": {
+    "Org1": {
+      "mspid": "Org1MSP",
+      "peers": [],
+      "certificateAuthorities": ["org1-ca"]
+    }
+  },
+  "peers": {},
+  "certificateAuthorities": {
+    "org1-ca": {
+      "url": "https://test-network-org1-ca-ca.localho.st:443",
+      "caName": "ca",
+      "tlsCACerts": {
+        "path": "./wallet-data/tlsca-signcert.pem"
+      },
+      "httpOptions": {
+        "verify": false
+      },
+      "registrar": [
+        {
+          "enrollId": "rcaadmin",
+          "enrollSecret": "rcaadminpw"
+        }
+      ]
+    }
+  }
+}

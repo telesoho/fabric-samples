@@ -10,7 +10,7 @@ import { NFTTransferEventHandler, NFTTransferEventJobData, NFT_TRANSFER_TABLE} f
 import { UserInfoEventHandler, UserEventJobData, USER_TABLE} from './handlers/user_handler';
 import { NFTEventHandler, NFTEventJobData, NFT_TABLE } from './handlers/nft_handler';
 import { IContractEventHandler, IContractEventPayload } from './handlers/event_handler';
-import { StateStore } from '../utils/stateStore';
+import { StateStore } from '../utils/state_store';
 import { Connection } from '../connection';
 import * as config from '../config';
 

@@ -10,7 +10,7 @@ import {
   ExtractJwt,
   StrategyOptions,
 } from 'passport-jwt';
-import { ApiKeyFileHelper } from '../utils/apikeyFileHelper';
+import { ApiKeyFileHelper } from '../utils/apikey';
 
 const { UNAUTHORIZED } = StatusCodes;
 

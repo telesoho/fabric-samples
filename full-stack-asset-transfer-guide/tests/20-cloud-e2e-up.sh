@@ -397,12 +397,14 @@ fabric-ca-client  register \
   --id.type       client \
   --url           https://$WORKSHOP_NAMESPACE-$ORG-ca-ca.$WORKSHOP_INGRESS_DOMAIN \
   --tls.certfiles $WORKSHOP_CRYPTO/cas/$ORG-ca/tls-cert.pem \
-  --mspdir        $WORKSHOP_CRYPTO/enrollments/$ORG/users/rcaadmin/msp
+  --mspdir        $WORKSHOP_CRYPTO/enrollments/$ORG/users/rcaadmin/msp \
+  --loglevel      debug
 
 fabric-ca-client enroll \
   --url           https://$USERNAME:$PASSWORD@$WORKSHOP_NAMESPACE-$ORG-ca-ca.$WORKSHOP_INGRESS_DOMAIN \
   --tls.certfiles $WORKSHOP_CRYPTO/cas/$ORG-ca/tls-cert.pem \
-  --mspdir        $WORKSHOP_CRYPTO/enrollments/$ORG/users/$USERNAME/msp
+  --mspdir        $WORKSHOP_CRYPTO/enrollments/$ORG/users/$USERNAME/msp \
+  --loglevel      debug
 
 mv $USER_MSP_DIR/keystore/*_sk $USER_MSP_DIR/keystore/key.pem
 

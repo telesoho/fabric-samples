@@ -1,0 +1,43 @@
+@hostname = test-network-org1-ca-ca.localho.st
+@port = 443
+@host = {{hostname}}:{{port}}
+@contentType = application/json
+@createdAt = {{$datetime iso8601}}
+@modifiedBy = {{$processEnv USER}}
+
+@ca_cert = {{$dotenv ca_cert}}
+
+#### cainfo
+GET https://test-network-org1-ca-ca.localho.st/api/v1/cainfo HTTP/1.1
+content-type: application/json
+Date: {{$datetime rfc1123}}
+X_API_KEY: {{ca_cert}}
+
+{}
+
+#### enroll
+POST https://org1user1:org1user1pw@test-network-org1-ca-ca.localho.st/reenroll HTTP/1.1
+content-type: application/json
+Authorization: Basic b3JnMXVzZXIxOm9yZzF1c2VyMXB3Cg==
+
+{"hosts":["fabric-network-k8s"],"certificate_request":"-----BEGIN CERTIFICATE REQUEST-----\nMIIBTDCB8wIBADBhMQswCQYDVQQGEwJVUzEXMBUGA1UECBMOTm9ydGggQ2Fyb2xp\nbmExFDASBgNVBAoTC0h5cGVybGVkZ2VyMQ8wDQYDVQQLEwZGYWJyaWMxEjAQBgNV\nBAMTCW9yZzF1c2VyMTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABGbveED18JwY\ngBS7w0kt83fpB58j48hX0gGkhB1UVOn9eEi7YDUt0vYTCNvH4Kuzho7YhZk4xEZi\n0FI6NXpNuZqgMDAuBgkqhkiG9w0BCQ4xITAfMB0GA1UdEQQWMBSCEmZhYnJpYy1u\nZXR3b3JrLWs4czAKBggqhkjOPQQDAgNIADBFAiEAkGogtOqZqXXYc3afrpBV6ZlK\nBhTofqGq214qON6UmcECIGEggluzyoP04OWCAS3wfbchmQqiCLaGQY5BEAWJJ3EW\n-----END CERTIFICATE REQUEST-----\n","profile":"","crl_override":"","label":"","NotBefore":"0001-01-01T00:00:00Z","NotAfter":"0001-01-01T00:00:00Z","ReturnPrecert":false,"CAName":""}
+
+
+### register
+POST https://test-network-org0-ca-ca.localho.st/api/v1/register HTTP/1.1
+content-type: application/json
+Authorization: Basic cmNhYWRtaW46cmNhYWRtaW5wdw==
+
+{
+  "id": "user1",
+  "type": "user",
+  "secret": "user1pw",
+  "max_enrollments": 0,
+  "affiliation": "org1",
+  "attrs": [
+    {
+      "name": "role",
+      "value": "user"
+    }
+  ]
+}

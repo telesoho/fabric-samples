@@ -1,5 +1,5 @@
 import { PostgreSQLManager } from '../postgresql_manager';
-import { ContractEvent } from 'fabric-network';
+import { ChaincodeEvent } from '@hyperledger/fabric-gateway';
 import { logger } from '../../logger';
 import PgBoss from 'pg-boss';
 
@@ -19,7 +19,7 @@ interface IContractEventHandler<T> {
 
   handleContractEvent(event: T): Promise<void>;
 
-  handleContractError(error: Error, event: ContractEvent): void;
+  handleContractError(error: Error, event: ChaincodeEvent): void;
 
   handleJobEvent(job: PgBoss.Job): Promise<void>;
 
@@ -48,10 +48,9 @@ abstract class BaseContractEventHandler
     return !!payload?.id && payload?.type === this.eventType;
   }
 
-  handleContractError(error: Error, event: ContractEvent): void {
-    const eventWithId = event as ContractEvent & { eventId: string }; // Type assertion
+  handleContractError(error: Error, event: ChaincodeEvent): void {
     logger.error(`Event handling failed for ${this.eventType}`, {
-      eventId: eventWithId.eventId,
+      eventName: event.eventName,
       error: error.message,
     });
   }

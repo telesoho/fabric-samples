@@ -27,82 +27,74 @@ export const port = env
  * This should be set to 'true' when running a docker composed fabric network on the
  * local system, e.g. using the test network; otherwise should it should be 'false'
  */
-export const asLocalhost = env
-  .get('AS_LOCAL_HOST')
-  .default('true')
-  .example('true')
-  .asBoolStrict();
+// export const asLocalhost = env
+//   .get('AS_LOCAL_HOST')
+//   .default('true')
+//   .example('true')
+//   .asBoolStrict();
 
 /**
  * The Org1 MSP ID
  */
 export const orgMSPID = env
-  .get('HLF_ORG_MSP_ID')
-  .default(`sampleOrgMSP`)
-  .example(`sampleOrgMSP`)
+  .get('ORG_MSP_ID')
+  .default(`Org1MSP`)
+  .example(`Org1MSP`)
   .asString();
 
 /**
  * Name of the channel which the basic asset sample chaincode has been installed on
  */
 export const channelName = env
-  .get('HLF_CHANNEL_NAME')
+  .get('CHANNEL_NAME')
   .default('mychannel')
   .example('mychannel')
   .asString();
 
-/**
- * Name used to install the basic asset sample
- */
-export const chaincodeName = env
-  .get('HLF_CHAINCODE_NAME')
-  .default('erc721')
-  .example('erc721')
-  .asString();
+// /**
+//  * Name used to install the basic asset sample
+//  */
+// export const chaincodeName = env
+//   .get('CHAINCODE_NAME')
+//   .default('erc721')
+//   .example('erc721')
+//   .asString();
 
-/**
- * The transaction submit timeout in seconds for commit notification to complete
- */
-export const commitTimeout = env
-  .get('HLF_COMMIT_TIMEOUT')
-  .default('300')
-  .example('300')
-  .asIntPositive();
+// /**
+//  * The transaction submit timeout in seconds for commit notification to complete
+//  */
+// export const commitTimeout = env
+//   .get('HLF_COMMIT_TIMEOUT')
+//   .default('300')
+//   .example('300')
+//   .asIntPositive();
 
-/**
- * The transaction submit timeout in seconds for the endorsement to complete
- */
-export const endorseTimeout = env
-  .get('HLF_ENDORSE_TIMEOUT')
-  .default('30')
-  .example('30')
-  .asIntPositive();
+// /**
+//  * The transaction submit timeout in seconds for the endorsement to complete
+//  */
+// export const endorseTimeout = env
+//   .get('HLF_ENDORSE_TIMEOUT')
+//   .default('30')
+//   .example('30')
+//   .asIntPositive();
 
-/**
- * The transaction query timeout in seconds
- */
-export const queryTimeout = env
-  .get('HLF_QUERY_TIMEOUT')
-  .default('3')
-  .example('3')
-  .asIntPositive();
+// /**
+//  * The transaction query timeout in seconds
+//  */
+// export const queryTimeout = env
+//   .get('HLF_QUERY_TIMEOUT')
+//   .default('3')
+//   .example('3')
+//   .asIntPositive();
 
 /**
  * The Org1 connection profile JSON
  * see: https://hyperledger.github.io/fabric-sdk-node/release-2.2/tutorial-commonconnectionprofile.html
  */
 export const commonConnectionProfileFile = env
-  .get('HLF_COMMON_CONNECTION_PROFILE_FILE')
+  .get('COMMON_CONNECTION_PROFILE_FILE')
+  .default('test-network-ccp.json')
   .required()
-  .asString();
-
-/**
- * The host the Redis server is running on
- */
-export const redisHost = env
-  .get('REDIS_HOST')
-  .default('localhost')
-  .example('localhost')
   .asString();
 
 /**
@@ -119,22 +111,21 @@ export const apiKeyFile = env
  * Specify this API key with the X-Api-Key header to use the Org1 connection profile and credentials
  */
 export const caHostName = env
-  .get('ORG_SDL_CA_HOST_NAME')
+  .get('CA_HOST_NAME')
   .required()
-  .example('ca.org.sdl.example.com')
+  .example('org1-ca')
   .asString();
 
-export const admin = env.get('ADMIN').required().example('admin').asString();
+export const admin = env
+  .get('ADMIN')
+  .required()
+  .example('rcaadmin')
+  .asString();
 
 export const adminPassword = env
   .get('ADMIN_PASSWORD')
   .required()
-  .example('adminpw')
-  .asString();
-
-export const couchWalletURL = env
-  .get('COUCH_WALLET_URL')
-  .example('http://admin:adminpw@couchdb.localcoin.jp:5984')
+  .example('rcaadminpw')
   .asString();
 
 export const coconikoChainCode = env
@@ -175,6 +166,9 @@ export const postgreSqlAdminDb = env.get('POSTGRES_SQL_ADMIN_DB')
   .example('postgres')
   .asString();
 
+/**
+ * The database to use for the REST API
+ */
 export const postgreSqlDb = env.get('POSTGRES_SQL_DB')
   .example('ambs_fabric_api_db')
   .asString();
@@ -196,3 +190,89 @@ export const rateLimitMax = env
   .default('5')
   .example('5')
   .asIntPositive();
+
+/**
+ * The type of wallet to use
+ */
+export const walletType = env
+  .get('WALLET_TYPE')
+  .default('file')
+  .asEnum(['file', 'database'])  
+
+/**
+ * The path to the wallet
+ * Only used for file system wallet
+ */
+export const walletPath = env
+  .get('WALLET_PATH')
+  .default('./wallet')
+  .example('./wallet')
+  .asString();
+
+/**
+ * The peer endpoint for the Fabric network
+ */
+export const peerEndpoint = env
+  .get('PEER_ENDPOINT')
+  .default('test-network-org1-peer1-peer.localho.st:443')
+  .example('test-network-org1-peer1-peer.localho.st:443')
+  .asString();
+
+/**
+ * The peer host alias for the Fabric network
+ */
+export const peerHostAlias = env
+  .get('PEER_HOST_ALIAS')
+  .default('test-network-org1-peer1-peer.localho.st')
+  .example('test-network-org1-peer1-peer.localho.st')
+  .asString();
+
+export const workshopPath = env
+  .get('WORKSHOP_PATH')
+  .default('/home/ubuntu/fabric-samples/full-stack-asset-transfer-guide')
+  .example('/home/ubuntu/fabric-samples/full-stack-asset-transfer-guide')
+  .asString();
+
+
+/**
+ * Path to the fabric-ca-client executable
+ * based on the workspace path
+ */
+export const fabricCAClientPath = env
+  .get('FABRIC_CA_CLIENT_PATH')
+  .default(`${workshopPath}/bin/fabric-ca-client`)
+  .example(`${workshopPath}/bin/fabric-ca-client`)
+  .asString();
+
+export const workshopCryptoPath = env
+  .get('WORKSHOP_CRYPTO_PATH')
+  .default(`${workshopPath}/infrastructure/sample-network/temp`)
+  .example(`${workshopPath}/infrastructure/sample-network/temp`)
+  .asString();
+
+/**
+ * CA TLS configuration
+ */
+export const caTlsEnabled = env
+  .get('CA_TLS_ENABLED')
+  .default('true')
+  .example('true')
+  .asBool();
+
+/**
+ * CA TLS certificate path
+ */
+export const caTlsCertPath = env
+  .get('CA_TLS_CERT_PATH')
+  .default(`${workshopCryptoPath}/cas/org1-ca/tls-cert.pem`)
+  .example(`${workshopCryptoPath}/cas/org1-ca/tls-cert.pem`)
+  .asString();
+
+/**
+ * Path to the TLS certificate
+ */
+export const tlsCertPath = env
+  .get('TLS_CERT_PATH')
+  .default(`${workshopCryptoPath}/channel-msp/peerOrganizations/org1/msp/tlscacerts/tlsca-signcert.pem`)
+  .example(`${workshopCryptoPath}/channel-msp/peerOrganizations/org1/msp/tlscacerts/tlsca-signcert.pem`)
+  .asString();

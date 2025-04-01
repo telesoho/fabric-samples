@@ -9,6 +9,7 @@ import passport from './middlewares/auth.middleware';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import * as config from './config';
+import { logger } from './logger';
 
 class App {
     public app: express.Application;
@@ -27,6 +28,9 @@ class App {
         } else if (process.env.NODE_ENV === 'production') {
             this.app.use(helmet());
         }
+  
+        logger.info('Adding rate limiter');
+
         this.app.use(
             rateLimit({
                 windowMs: config.rateLimitWindowMs,

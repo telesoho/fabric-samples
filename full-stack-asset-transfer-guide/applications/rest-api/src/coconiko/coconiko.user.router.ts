@@ -2,7 +2,6 @@ import express, { Request, Response } from 'express';
 import { body, param, query, validationResult } from 'express-validator';
 import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import { logger } from '../logger';
-import * as config from '../config';
 import { CoconikoCoin } from './coconiko-coin';
 
 const { CREATED, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, NOT_FOUND } = StatusCodes;
