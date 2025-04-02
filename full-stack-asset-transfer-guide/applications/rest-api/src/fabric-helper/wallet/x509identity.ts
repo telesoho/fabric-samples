@@ -1,14 +1,9 @@
-/*
- * Copyright 2019 IBM All Rights Reserved.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import {ICryptoSuite, ICryptoKey, User} from 'fabric-common';
-
+import * as crypto from 'crypto';
 import {Identity} from './identity';
 import {IdentityData} from './identitydata';
 import {IdentityProvider} from './identityprovider';
+import { Identity as GatewayIdentity, Signer, signers } from '@hyperledger/fabric-gateway';
 
 export interface X509Identity extends Identity {
 	type: 'X.509';
@@ -29,6 +24,7 @@ interface X509IdentityDataV1 extends IdentityData {
 }
 
 export class X509Provider implements IdentityProvider {
+
 	public readonly type: string = 'X.509';
 	private readonly cryptoSuite: ICryptoSuite = User.newCryptoSuite();
 
@@ -86,4 +82,13 @@ export class X509Provider implements IdentityProvider {
 
 		return user;
 	}
+
+	public getGatewayIdentity(identity: X509Identity): GatewayIdentity {
+		return {mspId: identity.mspId, credentials: Buffer.from(identity.credentials.certificate)};
+	}
+
+	public getGatewaySigner(identity: X509Identity): Signer {
+		return signers.newPrivateKeySigner(crypto.createPrivateKey(Buffer.from(identity.credentials.privateKey)));
+	}
 }
+

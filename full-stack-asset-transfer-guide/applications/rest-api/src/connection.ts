@@ -11,6 +11,7 @@ import { PostgreSQLManager } from './fabric-helper/postgresql_manager';
 import { logger } from './logger';
 import { CommonConnectionProfileHelper } from './fabric-helper/ccp';
 import FabricCAServices from 'fabric-ca-client';
+import { Wallet } from './fabric-helper/wallet/wallet';
 
 const channelName = envOrDefault('CHANNEL_NAME', 'mychannel');
 const chaincodeName = envOrDefault('CHAINCODE_NAME', 'asset-transfer');
@@ -76,7 +77,7 @@ export class Connection {
 
 async function initFabric(app: express.Application): Promise<void> {
     logger.info('Connecting to Fabric network with mspid');
-    const wallet = await createWallet();
+    const wallet: Wallet = await createWallet();
   
     app.locals.wallet = wallet;
   
@@ -100,10 +101,30 @@ async function initFabric(app: express.Application): Promise<void> {
     // The gRPC client connection should be shared by all Gateway connections to this endpoint.
     const client = await Connection.grpcClient();
 
+    // Must use an admin to register a new user
+    const adminIdentity = await wallet.get(config.admin);
+    if (!adminIdentity) {
+      console.log(
+        'An identity for the admin user does not exist in the wallet'
+      );
+      console.log('Enroll the admin user before retrying');
+      throw new Error(
+        'An identity for the admin user does not exist in the wallet'
+      );
+    }
+
+    // build a user object for authenticating with the CA
+    const provider = wallet
+      .getProviderRegistry()
+      .getProvider(adminIdentity.type);
+
+    const identity = provider.getGatewayIdentity(adminIdentity);
+    const signer = provider.getGatewaySigner(adminIdentity);
+
     const gateway = connect({
         client,
-        identity: await newIdentity(),
-        signer: await newSigner(),
+        identity: identity,
+        signer: signer,
         hash: hash.sha256,
         // Default timeouts for different gRPC calls
         evaluateOptions: () => {
@@ -154,18 +175,6 @@ async function initFabric(app: express.Application): Promise<void> {
     }
 }
 
-async function newIdentity(): Promise<Identity> {
-    const credentials = await fs.readFile(certPath);
-    return { mspId, credentials };
-}
-
-async function newSigner(): Promise<Signer> {
-    //const files = await fs.readdir(keyDirectoryPath);
-    // path.resolve(keyDirectoryPath, files[0]);
-    const privateKeyPem = await fs.readFile(keyPath);
-    const privateKey = crypto.createPrivateKey(privateKeyPem);
-    return signers.newPrivateKeySigner(privateKey);
-}
 /**
  * envOrDefault() will return the value of an environment variable, or a default value if the variable is undefined.
  */
