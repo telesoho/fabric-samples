@@ -1,0 +1,9 @@
+{
+    "db": "ambs_fabric_api_db",
+    "sqls": [
+        {
+            "sql": "DROP TABLE IF EXISTS fabric_api.wallet, coconiko.user_info, coconiko.transfer, coconiko.nft_transfer, coconiko.nft",
+            "params": {}
+        }
+    ]
+}

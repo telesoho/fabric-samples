@@ -1,7 +1,8 @@
 import { IDatabase } from 'pg-promise';
-import { pgp } from './pg_db';
+import { pgp } from '../src/utils/pg_db';
 import * as fs from 'fs';
-import * as config from '../config';
+import * as config from '../src/config';
+import path from 'path';
 
 class PgTool {
     readonly db: IDatabase<{}>;
@@ -47,7 +48,10 @@ class PgTool {
 async function main() {
     try {
         console.debug(process.argv);
-        const sqlFile = process.argv[2]??"dbtools-sample.json";
+        // Get the script directory path
+        const scriptDir = __dirname;
+        const sqlFile = process.argv[2]??path.join(scriptDir, "dbtools-sample.json");
+        console.log('Runing Script:', sqlFile);
 
         if(config.postgreSqlUri) {
             const sqlStr = fs.readFileSync(sqlFile, 'utf8');

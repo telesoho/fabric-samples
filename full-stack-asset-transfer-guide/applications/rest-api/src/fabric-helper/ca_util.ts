@@ -4,23 +4,19 @@ import { Identity } from './wallet/identity';
 import { UserExistsError } from '../errors';
 import * as config from '../config';
 import {
-  CommonConnectionProfileHelper,
   getPEM,
 } from './ccp';
 import { Wallets } from './wallet/wallets';
 import { logger } from '../logger';
-
+import { Connection } from '../connection';
 /**
  *
  * @param {*} ccp
  */
 const buildCAClient = (): FabricCAServices => {
-  // build an in memory object with the network configuration (also known as a connection profile)
-  const ccp: CommonConnectionProfileHelper =
-    new CommonConnectionProfileHelper(config.commonConnectionProfileFile, true);
 
   // Create a new CA client for interacting with the CA.
-  const caInfo = ccp.getCertificateAuthority(config.caHostName);
+  const caInfo = Connection.ccp().getCertificateAuthority(config.caHostName);
   const caTLSCACerts = getPEM(caInfo.tlsCACerts);
   const caClient = new FabricCAServices(
     caInfo.url,
@@ -229,4 +225,32 @@ export const createWallet = async (): Promise<Wallet> => {
 };
 
 
+export async function renewUserCertificate(userId: string, wallet: Wallet) {
+  const identity = await wallet.get(userId);
+  if (!identity) {
+    throw new Error(`User ${userId} not found in wallet`);
+  }
+  
+  // 使用现有凭证创建Fabric CA客户端
+  const provider = wallet.getProviderRegistry().getProvider(identity.type);
+  const user = await provider.getUserContext(identity, userId);
+  
+  // 重新注册以获取新证书
+  const caClient = buildCAClient();
+  const enrollment = await caClient.reenroll(user, []);
+  
+  // 创建新的身份信息，可以保留原有私钥或生成新的
+  const updatedIdentity = {
+    credentials: {
+      certificate: enrollment.certificate,
+      privateKey: enrollment.key.toBytes(), // 或保留原有私钥
+    },
+    mspId: identity.mspId,
+    type: 'X.509',
+  };
+  
+  // 更新钱包
+  await wallet.put(userId, updatedIdentity);
+  return updatedIdentity;
+}
 export { buildCAClient, enrollAdmin, registerAndEnrollUser, enrollUser };

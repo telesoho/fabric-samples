@@ -1,0 +1,9 @@
+{
+    "db": "ambs_fabric_api_db",
+    "sqls": [
+        {
+            "sql": "select * from coconiko.user_info limit 10",
+            "params": {}   
+        }
+    ]
+}

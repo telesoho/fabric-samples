@@ -21,7 +21,8 @@
     "convert-swagger": "node scripts/convert-swagger.js",
     "prestart": "npm run convert-swagger",
     "prebuild": "npm run convert-swagger",
-    "postbuild": "cp ./src/*_swagger.json ./dist/"
+    "postbuild": "cp ./src/*_swagger.json ./dist/",
+    "db:tools": "ts-node ./scripts/db_tools.ts"
   },
   "keywords": [],
   "author": "",

@@ -17,7 +17,7 @@ class App {
     public odooUserRoutes: OdooUserRouter = new OdooUserRouter();
     public coconikoRoutes: CoconikoRouter = new CoconikoRouter();
     constructor() {
-        new Connection().init();
+        logger.info('Creating REST server');
         this.app = express();
         this.app.use(express.json());
         this.app.use(express.urlencoded({ extended: true }));

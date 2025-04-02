@@ -1,36 +1,13 @@
 import { logger } from './logger';
 import app from "./app";
 import * as config from './config';
-import { buildCAClient, createWallet } from './fabric-helper/ca_util';
-import { enrollAdmin } from './fabric-helper/ca_util';
-import { PostgreSQLManager } from './fabric-helper/postgresql_manager';
+import { Connection } from './connection';
  
 async function main() {
-  logger.info('Creating REST server');
-
-  logger.info('Connecting to Fabric network with mspid');
-  const wallet = await createWallet();
-
-  app.locals.wallet = wallet;
-
-  // build an instance of the fabric ca services client based on
-  // the information in the network configuration
-  const caClient = buildCAClient();
-
-  // in a real application this would be done on an administrative flow, and only once
-  // TODO: need to reenroll
-  await enrollAdmin(caClient, wallet, config.orgMSPID);
-
-  if(config.postgreSqlUri) {
-    const dbManager = await PostgreSQLManager.create(
-      config.postgreSqlUri, 
-      config.postgreSqlDb!, 
-      config.postgreSqlAdminDb);
-
-    app.locals.dbManager = dbManager;
-  }
 
   logger.info('Starting REST server');
+  await new Connection().init(app);
+
   const server = app.listen(config.port,() => {
     logger.info('REST server started on port: %d', config.port);
   });

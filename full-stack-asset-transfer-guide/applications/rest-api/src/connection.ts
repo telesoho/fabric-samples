@@ -2,9 +2,16 @@ import * as grpc from '@grpc/grpc-js';
 import { connect, Contract, hash, Identity, Signer, signers } from '@hyperledger/fabric-gateway';
 import * as crypto from 'crypto';
 import * as path from 'path';
-
+import express from 'express';
 import { promises as fs } from 'fs';
 import * as config from './config';
+import { createWallet } from './fabric-helper/ca_util';
+import { buildCAClient, enrollAdmin } from './fabric-helper/ca_util';
+import { PostgreSQLManager } from './fabric-helper/postgresql_manager';
+import { logger } from './logger';
+import { CommonConnectionProfileHelper } from './fabric-helper/ccp';
+import FabricCAServices from 'fabric-ca-client';
+
 const channelName = envOrDefault('CHANNEL_NAME', 'mychannel');
 const chaincodeName = envOrDefault('CHAINCODE_NAME', 'asset-transfer');
 const odooUserChaincodeName = envOrDefault('CHAINCODE_NAME_ODOO_USER', 'odoo-user');
@@ -32,13 +39,66 @@ export class Connection {
     public static coconikoCoinContract: Contract;
     public static coconikoNFTContract: Contract;
     public static governanceTokenContract: Contract;
-    public init() {
-        initFabric();
+    private static _caClient: FabricCAServices;
+    private static _ccp: CommonConnectionProfileHelper;
+    private static _grpcClient: grpc.Client;
+
+    public static async grpcClient() :Promise<grpc.Client> {
+        if (!Connection._grpcClient) {
+            // Connection._grpcClient = await newGrpcConnection();
+            const tlsCertPath = Connection.ccp().getCertificateAuthority(config.caHostName).tlsCACerts.path;
+            const tlsRootCert = await fs.readFile(tlsCertPath);
+            const tlsCredentials = grpc.credentials.createSsl(tlsRootCert);
+            Connection._grpcClient = new grpc.Client(peerEndpoint, tlsCredentials, {
+                'grpc.ssl_target_name_override': peerHostAlias,
+            });
+        }
+        return Connection._grpcClient;
+    }
+    public static caClient() :FabricCAServices {
+        if (!Connection._caClient) {
+            Connection._caClient = buildCAClient();
+        }
+        return Connection._caClient;
+    }
+    public static ccp() :CommonConnectionProfileHelper {
+        if (!Connection._ccp) {
+            Connection._ccp = new CommonConnectionProfileHelper(config.commonConnectionProfileFile, true);
+        }
+        return Connection._ccp;
+    }
+    public async init(app: express.Application) {
+        // build an in memory object with the network configuration (also known as a connection profile)
+
+        await initFabric(app);
     }
 }
-async function initFabric(): Promise<void> {
+
+async function initFabric(app: express.Application): Promise<void> {
+    logger.info('Connecting to Fabric network with mspid');
+    const wallet = await createWallet();
+  
+    app.locals.wallet = wallet;
+  
+    // build an instance of the fabric ca services client based on
+    // the information in the network configuration
+    const caClient = Connection.caClient();
+  
+    // in a real application this would be done on an administrative flow, and only once
+    // TODO: need to reenroll
+    await enrollAdmin(caClient, wallet, config.orgMSPID);
+  
+    if(config.postgreSqlUri) {
+      const dbManager = await PostgreSQLManager.create(
+        config.postgreSqlUri, 
+        config.postgreSqlDb!, 
+        config.postgreSqlAdminDb);
+  
+      app.locals.dbManager = dbManager;
+    }
+
     // The gRPC client connection should be shared by all Gateway connections to this endpoint.
-    const client = await newGrpcConnection();
+    const client = await Connection.grpcClient();
 
     const gateway = connect({
         client,
@@ -92,13 +152,6 @@ async function initFabric(): Promise<void> {
         // gateway.close();
         // client.close();
     }
-}
-async function newGrpcConnection(): Promise<grpc.Client> {
-    const tlsRootCert = await fs.readFile(tlsCertPath);
-    const tlsCredentials = grpc.credentials.createSsl(tlsRootCert);
-    return new grpc.Client(peerEndpoint, tlsCredentials, {
-        'grpc.ssl_target_name_override': peerHostAlias,
-    });
 }
 
 async function newIdentity(): Promise<Identity> {
