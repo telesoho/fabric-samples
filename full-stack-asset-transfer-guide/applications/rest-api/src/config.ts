@@ -116,58 +116,88 @@ export const caHostName = env
   .example('org1-ca')
   .asString();
 
+/**
+ * Admin user name
+ */
 export const admin = env
   .get('ADMIN')
   .required()
   .example('rcaadmin')
   .asString();
 
+/**
+ * Admin password
+ */
 export const adminPassword = env
   .get('ADMIN_PASSWORD')
   .required()
   .example('rcaadminpw')
   .asString();
 
+/**
+ * Odoo user chaincode
+ */
 export const odooUserChainCode = env
   .get('ODOO_USER_CHAINCODE')
   .default('odoo-user')
   .example('odoo-user')
   .asString();
 
+/**
+ * Coconiko chaincode
+ */
 export const coconikoChainCode = env
   .get('COCONIKO_CHAINCODE')
   .default('coconiko')
   .example('coconiko')
   .asString();
 
+/**
+ * Coconiko coin contract
+ */
 export const coconikoCoinContract = env
   .get('COCONIKO_COIN_CONTRACT')
   .default('CoconikoCoinContract')
   .example('CoconikoCoinContract')
   .asString();
 
+/**
+ * Coconiko NFT contract
+ */
 export const coconikoNFTContract = env
   .get('COCONIKO_NFT_CONTRACT')
   .default('CoconikoNFTContract')
   .example('CoconikoNFTContract')
   .asString();
 
+/**
+ * Coconiko governance token contract
+ */
 export const coconikoGovernanceTokenContract = env
   .get('COCONIKO_GOVERNANCE_TOKEN_CONTRACT')
   .default('GovernanceTokenContract')
   .example('GovernanceTokenContract')
   .asString();
 
+/**
+ * Coconiko DB
+ */
 export const coconikoDB = env
   .get('COCONIKO_DB')
   .default('sdlchannel_coconiko-coin')
   .example('sdlchannel_coconiko-coin')
   .asString();
 
+/**
+ * PostgreSQL connection URI
+ */
 export const postgreSqlUri = env.get('POSTGRES_SQL_URI')
   .example('postgresql://admin:adminpw@postgres.localcoin.jp:5432')
   .asString();
 
+/**
+ * PostgreSQL admin database
+ */
 export const postgreSqlAdminDb = env.get('POSTGRES_SQL_ADMIN_DB')
   .example('postgres')
   .asString();
@@ -233,6 +263,9 @@ export const peerHostAlias = env
   .example('test-network-org1-peer1-peer.localho.st')
   .asString();
 
+/**
+ * The path to the workshop
+ */
 export const workshopPath = env
   .get('WORKSHOP_PATH')
   .default('/home/ubuntu/fabric-samples/full-stack-asset-transfer-guide')
@@ -281,4 +314,14 @@ export const tlsCertPath = env
   .get('TLS_CERT_PATH')
   .default(`${workshopCryptoPath}/channel-msp/peerOrganizations/org1/msp/tlscacerts/tlsca-signcert.pem`)
   .example(`${workshopCryptoPath}/channel-msp/peerOrganizations/org1/msp/tlscacerts/tlsca-signcert.pem`)
+  .asString();
+
+/**
+ * JWT secret
+ * use $(uuidgen) to generate
+ */
+export const jwtSecret = env
+  .get('JWT_SECRET')
+  .required()
+  .example('70f8b0ab-c8d9-40d9-a178-99ef693713e4')
   .asString();

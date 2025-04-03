@@ -135,7 +135,7 @@ export const authenticateApiKey = (
 // 2 passport-jwtの設定
 const opts: StrategyOptions = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: process.env.JWT_SECRET,
+  secretOrKey: config.jwtSecret,
 };
 
 passport.use(
