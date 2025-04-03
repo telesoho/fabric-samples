@@ -6,7 +6,13 @@ import { Connection } from './connection';
 async function main() {
 
   logger.info('Starting REST server');
-  await new Connection().init(app);
+
+  // Override console.debug to be a no-op when log level is not debug
+  if (config.logLevel !== 'debug') {
+    console.debug = () => {};
+  }
+
+  await new Connection(app).init();
 
   const server = app.listen(config.port,() => {
     logger.info('REST server started on port: %d', config.port);

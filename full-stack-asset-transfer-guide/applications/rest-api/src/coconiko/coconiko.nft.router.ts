@@ -3,6 +3,8 @@ import { body, param, query, validationResult } from 'express-validator';
 import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import { logger } from '../logger';
 import { CoconikoNFT } from './nft';
+import * as config from '../config';
+import { Gateway, Network } from '@hyperledger/fabric-gateway';
 
 const { CREATED, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, NOT_FOUND } = StatusCodes;
 const assetsRouter = express.Router();
@@ -30,8 +32,11 @@ assetsRouter.post(
     try {
       const userId = req.user as string;
       const { metadata } = req.body;
-      
-      const nftService = new CoconikoNFT();
+      const gateway = req.app.locals.gateway;
+      const network = gateway.getNetwork(config.channelName);
+      const coconikoNFTContract = network.getContract(config.coconikoChainCode, config.coconikoNFTContract);
+
+      const nftService = new CoconikoNFT(coconikoNFTContract);
       const result = await nftService.mintNFT(userId, metadata);
       
       return res.status(OK).json({ result });
@@ -76,10 +81,14 @@ assetsRouter.post(
     try {
       const userId = req.user as string;
       const { tokenId, from, to } = req.body;
+
+      const gateway:Gateway = req.app.locals.gateway;
+      const network:Network = gateway.getNetwork(config.channelName);
+      const coconikoNFTContract = network.getContract(config.coconikoChainCode, config.coconikoNFTContract);
+
+      const nftService = new CoconikoNFT(coconikoNFTContract);
       
-      const nftService = new CoconikoNFT();
       const result = await nftService.transferNFT(userId, tokenId, to, from);
-      
       return res.status(OK).json({ result });
     } catch (err) {
       logger.error({ err }, req.url);
@@ -116,9 +125,13 @@ assetsRouter.get(
     try {
       const { tokenId } = req.params;
       
-      const nftService = new CoconikoNFT();
+      const gateway: Gateway = req.app.locals.gateway;
+      const network: Network = gateway.getNetwork(config.channelName);
+      const coconikoNFTContract = network.getContract(config.coconikoChainCode, config.coconikoNFTContract);
+
+      const nftService = new CoconikoNFT(coconikoNFTContract);
       const result = await nftService.getNFTInfo(tokenId);
-      
+
       return res.status(OK).json({ result });
     } catch (err) {
       logger.error({ err }, req.url);
@@ -143,8 +156,13 @@ assetsRouter.get(
     try {
       const userId = req.user as string;
       
-      const nftService = new CoconikoNFT();
+      const gateway = req.app.locals.gateway;
+      const network = gateway.getNetwork(config.channelName);
+      const coconikoNFTContract = network.getContract(config.coconikoChainCode, config.coconikoNFTContract);
+
+      const nftService = new CoconikoNFT(coconikoNFTContract);
       const result = await nftService.getUserNFTs(userId);
+      network.close();
       
       return res.status(OK).json({ result });
     } catch (err) {

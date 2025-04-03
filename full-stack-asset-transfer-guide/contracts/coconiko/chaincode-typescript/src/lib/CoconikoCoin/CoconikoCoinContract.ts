@@ -5,8 +5,6 @@ import { UserInfo } from '../UserInfo';
 import { CoinTransferEvent } from './CoinTransferEvent';
 import { ContractEvent } from '../ContractEvent';
 
-// Define org MSPID
-const orgMSPID = 'sdlMSP';
 
 // System account ID for token minting
 const SystemId = '0x0';
@@ -150,11 +148,6 @@ class CoconikoCoinContract extends Contract {
      */
     @Transaction()
     async Initialize(ctx: Context): Promise<void> {
-        const clientMSPID = ctx.clientIdentity.getMSPID();
-        if (clientMSPID !== orgMSPID) {
-            throw new Error('Client is not authorized to set the name and symbol of the token');
-        }
-
         const systemInfoBytes = await ctx.stub.getState(SystemInfo.getKey());
         if (!systemInfoBytes || systemInfoBytes.length === 0) {
             const systemInfo = new SystemInfo();
@@ -173,7 +166,7 @@ class CoconikoCoinContract extends Contract {
     async CreateUserAccount(ctx: Context): Promise<Record<string, unknown>> {
         ContractEvent.initEvents();
         const userInfo = await UserInfo.createUserAccount(ctx);
-        await ContractEvent.commitEvents(ctx);
+        ContractEvent.commitEvents(ctx);
         return userInfo.toJSON();
     }
 
@@ -203,7 +196,7 @@ class CoconikoCoinContract extends Contract {
             userInfo.data.active = activeBool;
             await userInfo.putState(ctx);
         }
-        await ContractEvent.commitEvents(ctx);
+        ContractEvent.commitEvents(ctx);
         return userInfo.toJSON();
     }
 
@@ -217,10 +210,6 @@ class CoconikoCoinContract extends Contract {
     @Transaction()
     async Mint(ctx: Context, amount: string, days: string): Promise<Record<string, unknown>> {
         ContractEvent.initEvents();
-        const clientMSPID = ctx.clientIdentity.getMSPID();
-        if (clientMSPID !== orgMSPID) {
-            throw new Error('Client is not authorized to mint new tokens');
-        }
 
         const minter = ctx.clientIdentity.getID();
 
@@ -318,11 +307,6 @@ class CoconikoCoinContract extends Contract {
         
         const clientId = ctx.clientIdentity.getID();
         console.debug('clientId is ', clientId);
-        
-        const clientMSPID = ctx.clientIdentity.getMSPID();
-        if (clientMSPID !== orgMSPID) {
-            throw new Error(`clientMSPID: ${clientMSPID}, client is not authorized to burn`);
-        }
         
         // Get user info
         const userInfo = await UserInfo.fromState(ctx, owner);
@@ -680,4 +664,4 @@ class CoconikoCoinContract extends Contract {
     }
 }
 
-export { CoconikoCoinContract, orgMSPID }; 
+export { CoconikoCoinContract }; 

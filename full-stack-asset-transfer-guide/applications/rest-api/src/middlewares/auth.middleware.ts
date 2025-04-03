@@ -11,6 +11,8 @@ import {
   StrategyOptions,
 } from 'passport-jwt';
 import { ApiKeyFileHelper } from '../utils/apikey';
+import { Connection } from '../connection';
+import { hash, connect } from '@hyperledger/fabric-gateway';
 
 const { UNAUTHORIZED } = StatusCodes;
 
@@ -54,14 +56,40 @@ const fabricAPIKeyStrategy: HeaderAPIKeyStrategy = new HeaderAPIKeyStrategy(
         }
       }
 
-      // const gateway = await createGateway(
-      //   localcoin_ccp,
-      //   mspId,
-      //   req?.app.locals.wallet
-      // );
-      // if (req) {
-      //   req.app.locals.gateway = gateway;
-      // }
+      const identity = await Connection.wallet.get(mspId);
+      if (!identity) {
+        return done(null, false, 'An identity for the user does not exist');        
+      }
+
+      // build a user object for authenticating with the CA
+      const provider = Connection.wallet
+        .getProviderRegistry()
+        .getProvider(identity.type);
+
+      const gateway = connect({
+          client: Connection.client,
+          identity: provider.getGatewayIdentity(identity),
+          signer: provider.getGatewaySigner(identity),
+          hash: hash.sha256,
+          // Default timeouts for different gRPC calls
+          evaluateOptions: () => {
+              return { deadline: Date.now() + 5000 }; // 5 seconds
+          },
+          endorseOptions: () => {
+              return { deadline: Date.now() + 15000 }; // 15 seconds
+          },
+          submitOptions: () => {
+              return { deadline: Date.now() + 5000 }; // 5 seconds
+          },
+          commitStatusOptions: () => {
+              return { deadline: Date.now() + 60000 }; // 1 minute
+          },
+      });
+
+      if(req) {
+        req.app.locals.gateway = gateway;
+      }
+
       return done(null, mspId);
     } catch (e) {
       if (typeof e === 'string') {
@@ -137,6 +165,28 @@ export const authenticateJwt = (
       return next();
     });
   })(req, res, next);
+};
+
+export const gatewayCloseMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void | Response> => {
+  res.on('finish', () => {
+    console.debug(`Response finished for ${req.method} ${req.url} with status ${res.statusCode}`);
+    if (req.app.locals.gateway) {
+      console.debug(`Closing gateway for ${req.method} ${req.url}`);
+      req.app.locals.gateway.close();
+    }
+  });
+  res.on('error', (err) => {
+    console.debug(`Error occurred for ${req.method} ${req.url}: ${err}`);
+    if (req.app.locals.gateway) {
+      console.debug(`Closing gateway for ${req.method} ${req.url}`);
+      req.app.locals.gateway.close();
+    }
+  });  
+  next();
 };
 
 // 3 passportをexport

@@ -8,99 +8,6 @@ import { CoconikoCoin } from './coconiko-coin';
 const { CREATED, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, NOT_FOUND } = StatusCodes;
 const assetsRouter = express.Router();
 
-// Create new user
-assetsRouter.put(
-  '/user',
-  body().isObject().withMessage('body must contain an user object'),
-  body(
-    'username',
-    'user name you wish to register. must be a string'
-  ).notEmpty(),
-  body('role', 'role').notEmpty(),
-  async (req: Request, res: Response) => {
-    logger.debug('Register and enroll user to fabric network');
-    try {
-      // TODO: Implement
-    } catch (err) {
-      logger.error({ err }, 'Error processing create user');
-
-      if (req.app.get('env') === 'development') {
-        let message = err;
-        if (err instanceof Error) {
-          message = err.message;
-        }
-        return res.status(INTERNAL_SERVER_ERROR).json({
-          status: message,
-          timestamp: new Date().toISOString(),
-        });
-      }
-
-      return res.status(INTERNAL_SERVER_ERROR).json({
-        status: getReasonPhrase(INTERNAL_SERVER_ERROR),
-        timestamp: new Date().toISOString(),
-      });
-    }
-  }
-);
-
-assetsRouter.post('/user',
-  body().isObject().withMessage('body must be an object'),
-  body('active', '{Boolean} amount amount of tokens to be minted').isBoolean().toBoolean().notEmpty(),
-  async (req: Request, res: Response) => {
-    try {
-      logger.debug(req.body);
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(BAD_REQUEST).json({
-          status: getReasonPhrase(BAD_REQUEST),
-          reason: 'VALIDATION_ERROR',
-          message: 'Invalid request body',
-          timestamp: new Date().toISOString(),
-          errors: errors.array(),
-        });
-      }
-      // TODO: Implement
-    } catch (err) {
-      logger.error({ err }, req.url);
-      if (req.app.get('env') === 'development') {
-        let message = err;
-        if (err instanceof Error) {
-          message = err.message;
-        }
-        return res.status(INTERNAL_SERVER_ERROR).json({
-          status: message,
-          timestamp: new Date().toISOString(),
-        });
-      }
-      return res.status(INTERNAL_SERVER_ERROR).json({
-        status: getReasonPhrase(INTERNAL_SERVER_ERROR),
-        timestamp: new Date().toISOString(),
-      });
-    }
-  });
-
-assetsRouter.get('/user', async (req: Request, res: Response) => {
-  try {
-    // TODO: Implement
-  } catch (err) {
-    logger.error({ err }, req.url);
-    if (req.app.get('env') === 'development') {
-      let message = err;
-      if (err instanceof Error) {
-        message = err.message;
-      }
-      return res.status(INTERNAL_SERVER_ERROR).json({
-        status: message,
-        timestamp: new Date().toISOString(),
-      });
-    }
-    return res.status(INTERNAL_SERVER_ERROR).json({
-      status: getReasonPhrase(INTERNAL_SERVER_ERROR),
-      timestamp: new Date().toISOString(),
-    });
-  }
-});
-
 assetsRouter.post(
   '/Mint',
   body().isObject().withMessage('body must be an object'),
@@ -120,11 +27,10 @@ assetsRouter.post(
     }
 
     try {
-      const userId = req.user as string;
       const { amount, days } = req.body;
       
       const coinService = new CoconikoCoin();
-      const result = await coinService.mintCoin(userId, amount, days);
+      const result = await coinService.Mint(amount, days);
       
       return res.status(OK).json({ result });
     } catch (err) {
@@ -166,7 +72,7 @@ assetsRouter.post(
       const { owners } = req.body;
       
       const coinService = new CoconikoCoin();
-      const result = await coinService.getBalances(owners);
+      const result = await coinService.BalanceOf(owners);
       
       return res.status(OK).json({ result });
     } catch (err) {
@@ -207,11 +113,10 @@ assetsRouter.post(
     }
 
     try {
-      const userId = req.user as string;
       const { to, amount } = req.body;
       
       const coinService = new CoconikoCoin();
-      const result = await coinService.transfer(userId, to, amount);
+      const result = await coinService.Transfer(to, amount);
       
       return res.status(OK).json({ result });
     } catch (err) {
@@ -253,11 +158,10 @@ assetsRouter.post(
     }
 
     try {
-      const adminUserId = req.user as string;
       const { from, to, amount } = req.body;
       
       const coinService = new CoconikoCoin();
-      const result = await coinService.transferFrom(adminUserId, from, to, amount);
+      const result = await coinService.TransferFrom(from, to, amount);
       
       return res.status(OK).json({ result });
     } catch (err) {
@@ -389,15 +293,14 @@ assetsRouter.get(
     }
 
     try {
-      const userId = req.user as string;
       const startDate = req.query.startDate as string | undefined;
       const endDate = req.query.endDate as string | undefined;
       const pageSize = req.query.pageSize ? parseInt(req.query.pageSize as string) : undefined;
       const skip = req.query.skip ? parseInt(req.query.skip as string) : undefined;
       
       const coinService = new CoconikoCoin();
-      const result = await coinService.getClientAccountEventHistory(userId, startDate, endDate, pageSize, skip);
-      
+      const result = await coinService.getClientAccountEventHistory(startDate, endDate, pageSize, skip);
+
       return res.status(OK).json({ result });
     } catch (err) {
       logger.error({ err }, req.url);
@@ -436,12 +339,11 @@ assetsRouter.get(
     }
 
     try {
-      const userId = req.user as string;
       const startDate = req.query.startDate as string | undefined;
       const endDate = req.query.endDate as string | undefined;
       
       const coinService = new CoconikoCoin();
-      const result = await coinService.getClientAccountEventHistoryCount(userId, startDate, endDate);
+      const result = await coinService.getClientAccountEventHistoryCount(startDate, endDate);
       
       return res.status(OK).json({ result });
     } catch (err) {

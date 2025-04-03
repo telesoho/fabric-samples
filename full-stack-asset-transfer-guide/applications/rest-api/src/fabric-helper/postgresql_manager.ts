@@ -11,7 +11,6 @@ import { UserInfoEventHandler, UserEventJobData, USER_TABLE} from './handlers/us
 import { NFTEventHandler, NFTEventJobData, NFT_TABLE } from './handlers/nft_handler';
 import { IContractEventHandler, IContractEventPayload } from './handlers/event_handler';
 import { StateStore } from '../utils/state_store';
-import { Connection } from '../connection';
 import * as config from '../config';
 
 const COCONIKO_SCHEMA = 'coconiko';

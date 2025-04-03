@@ -2,11 +2,6 @@ import { Contract } from '@hyperledger/fabric-gateway';
 import { TextDecoder } from 'util';
 import { Connection } from '../connection';
 import { logger } from '../logger';
-import * as config from '../config';
-import * as fs from 'fs';
-import * as path from 'path';
-import axios from 'axios';
-import * as https from 'https';
 
 const utf8Decoder = new TextDecoder();
 
@@ -23,52 +18,31 @@ export class CoconikoCoin {
 
     /**
      * Register a new user
-     * @param username User identifier
-     * @param role User role (client, admin, etc.)
      * @returns Registration result
      */
-    async registerUser(username: string, role: string): Promise<any> {
+    async CreateUserAccount(): Promise<any> {
         try {
-            logger.info(`Registering user ${username} with role ${role}`);
-
-            // TODO: Use Fabric CA REST API to implement the registration logic
-            // 1. Register the user with Fabric CA
-            // 2. Enroll the user with Fabric CA
-            // 3. Save the user's certificate and private key to the wallet
-            // 4. Return the user ID and MSP ID
-            
-            return {
-                success: true,
-                userId: username,
-                role: role,
-                // mspId: mspId,
-                walletCreated: true,
-                message: 'User registered and enrolled successfully',
-            };
+            const result = await this.#contract.submitTransaction('CreateUserAccount');
+            return JSON.parse(utf8Decoder.decode(result));
         } catch (error) {
-            logger.error(`Failed to register user ${username}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-            throw new Error(`Failed to register user: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            throw new Error(`Failed to create user account: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
     /**
      * Get information about a user
      */
-    async getUserInfo(userId: string): Promise<any> {
-        const result = await this.#contract.evaluateTransaction(
-            'GetUserInfo', 
-            userId
-        );
+    async ClientAccountInfo(): Promise<any> {
+        const result = await this.#contract.evaluateTransaction('ClientAccountInfo');
         return JSON.parse(utf8Decoder.decode(result));
     }
 
     /**
-     * Update user information
+     * Activates or deactivates a user
      */
-    async updateUser(userId: string, active: boolean): Promise<any> {
+    async ActiveUser(active: boolean): Promise<any> {
         const result = await this.#contract.submitTransaction(
-            'UpdateUser', 
-            userId, 
+            'ActiveUser', 
             active.toString()
         );
         return JSON.parse(utf8Decoder.decode(result));
@@ -77,10 +51,9 @@ export class CoconikoCoin {
     /**
      * Mint new coins for a user
      */
-    async mintCoin(userId: string, amount: number, days: number = 0): Promise<any> {
+    async Mint(amount: number, days: number = 0): Promise<any> {
         const result = await this.#contract.submitTransaction(
-            'MintCoin', 
-            userId, 
+            'Mint', 
             amount.toString(), 
             days.toString()
         );
@@ -90,9 +63,9 @@ export class CoconikoCoin {
     /**
      * Get balances for multiple users
      */
-    async getBalances(owners: string[]): Promise<any> {
+    async BalanceOf(owners: string[]): Promise<any> {
         const result = await this.#contract.evaluateTransaction(
-            'GetBalances', 
+            'BalanceOf', 
             JSON.stringify(owners)
         );
         return JSON.parse(utf8Decoder.decode(result));
@@ -101,10 +74,9 @@ export class CoconikoCoin {
     /**
      * Transfer coins to another user
      */
-    async transfer(fromUserId: string, toAccountId: string, amount: number): Promise<any> {
+    async Transfer(toAccountId: string, amount: number): Promise<any> {
         const result = await this.#contract.submitTransaction(
             'Transfer', 
-            fromUserId, 
             toAccountId, 
             amount.toString()
         );
@@ -114,10 +86,9 @@ export class CoconikoCoin {
     /**
      * Transfer coins from one user to another (admin only)
      */
-    async transferFrom(adminUserId: string, fromAccountId: string, toAccountId: string, amount: number): Promise<any> {
+    async TransferFrom(fromAccountId: string, toAccountId: string, amount: number): Promise<any> {
         const result = await this.#contract.submitTransaction(
             'TransferFrom', 
-            adminUserId,
             fromAccountId, 
             toAccountId, 
             amount.toString()
@@ -130,7 +101,7 @@ export class CoconikoCoin {
      */
     async getTotalSupply(startDate?: string, endDate?: string, activeUserOnly: boolean = true): Promise<any> {
         const result = await this.#contract.evaluateTransaction(
-            'GetTotalSupply', 
+            'TotalSupply', 
             startDate || '', 
             endDate || '', 
             activeUserOnly.toString()
@@ -154,14 +125,12 @@ export class CoconikoCoin {
      * Get transaction event history for a user's account
      */
     async getClientAccountEventHistory(
-        userId: string, 
         startDate?: string, 
         endDate?: string, 
         pageSize?: number, 
         skip?: number
     ): Promise<any> {
         const args = [
-            userId,
             startDate || '',
             endDate || '',
             pageSize !== undefined ? pageSize.toString() : '',
@@ -179,13 +148,11 @@ export class CoconikoCoin {
      * Get count of transaction events for a user's account
      */
     async getClientAccountEventHistoryCount(
-        userId: string, 
         startDate?: string, 
         endDate?: string
     ): Promise<any> {
         const result = await this.#contract.evaluateTransaction(
             'GetClientAccountEventHistoryCount', 
-            userId,
             startDate || '',
             endDate || ''
         );
@@ -209,7 +176,7 @@ export class CoconikoCoin {
      */
     async queryAssetsWithPagination(query: any, pageSize: number, bookmark: string = ""): Promise<any> {
         const result = await this.#contract.evaluateTransaction(
-            'QueryAssetsWithPagination', 
+            'queryAssetsWithPagination', 
             JSON.stringify(query), 
             pageSize.toString(), 
             bookmark

@@ -16,7 +16,7 @@ import { Connection } from '../connection';
 const buildCAClient = (): FabricCAServices => {
 
   // Create a new CA client for interacting with the CA.
-  const caInfo = Connection.ccp().getCertificateAuthority(config.caHostName);
+  const caInfo = Connection.ccp.getCertificateAuthority(config.caHostName);
   const caTLSCACerts = getPEM(caInfo.tlsCACerts);
   const caClient = new FabricCAServices(
     caInfo.url,
@@ -125,7 +125,7 @@ const registerAndEnrollUser = async (
   userId: string,
   affiliation: string,
   role: string
-): Promise<Identity | undefined> => {
+): Promise<Identity> => {
   try {
     // Check to see if we've already enrolled the user
     const userIdentity = await wallet.get(userId);
@@ -137,8 +137,6 @@ const registerAndEnrollUser = async (
         `An identity for the user ${userId} already exists in the wallet`
       );
     }
-
-    
 
     // Must use an admin to register a new user
     const adminIdentity = await wallet.get(config.admin);

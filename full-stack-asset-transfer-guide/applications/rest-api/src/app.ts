@@ -1,11 +1,10 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import { Connection } from './connection';
 import { AssetRouter } from './asset-transfer/router';
 import { OdooUserRouter } from './odoo-user/router';
 import { CoconikoRouter } from './coconiko/router';
 import { healthRouter } from './health.router';
-import passport from './middlewares/auth.middleware';
+import passport, { gatewayCloseMiddleware } from './middlewares/auth.middleware';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import * as config from './config';
@@ -22,6 +21,7 @@ class App {
         this.app.use(express.json());
         this.app.use(express.urlencoded({ extended: true }));
         this.app.use(passport.initialize());
+        this.app.use(gatewayCloseMiddleware);
         if (process.env.NODE_ENV === 'development') {
             var cors = require('cors');
             this.app.use(cors());

@@ -128,6 +128,12 @@ export const adminPassword = env
   .example('rcaadminpw')
   .asString();
 
+export const odooUserChainCode = env
+  .get('ODOO_USER_CHAINCODE')
+  .default('odoo-user')
+  .example('odoo-user')
+  .asString();
+
 export const coconikoChainCode = env
   .get('COCONIKO_CHAINCODE')
   .default('coconiko')

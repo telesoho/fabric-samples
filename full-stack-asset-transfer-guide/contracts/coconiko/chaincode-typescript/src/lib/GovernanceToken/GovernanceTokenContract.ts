@@ -4,8 +4,6 @@ import { Proposal } from './Proposal';
 import { ProposalVote } from './ProposalVote';
 import { ContractEvent } from '../ContractEvent';
 
-const orgMSPID = 'sdlMSP';
-
 @Info({
     title: 'GovernanceTokenContract',
     description: 'Smart contract for managing governance tokens and voting processes in the Coconiko platform',
@@ -84,11 +82,6 @@ export class GovernanceTokenContract extends Contract {
 
     @Transaction()
     async Patch(ctx: Context, key: string, data: string): Promise<void> {
-        // Check minter authorization - assumes orgMSPID is the issuer with privilege to mint a new token
-        const clientMSPID = ctx.clientIdentity.getMSPID();
-        if (clientMSPID !== orgMSPID) {
-            throw new Error(`clientMSPID:${clientMSPID}:client is not authorized to patch`);
-        }
         await ctx.stub.putState(key, Buffer.from(data));
     }
 } 

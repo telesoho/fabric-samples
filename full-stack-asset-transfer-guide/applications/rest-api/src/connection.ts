@@ -1,6 +1,5 @@
 import * as grpc from '@grpc/grpc-js';
-import { connect, Contract, hash, Identity, Signer, signers } from '@hyperledger/fabric-gateway';
-import * as crypto from 'crypto';
+import { connect, Contract, hash, Identity, Signer, signers, Gateway } from '@hyperledger/fabric-gateway';
 import * as path from 'path';
 import express from 'express';
 import { promises as fs } from 'fs';
@@ -13,9 +12,9 @@ import { CommonConnectionProfileHelper } from './fabric-helper/ccp';
 import FabricCAServices from 'fabric-ca-client';
 import { Wallet } from './fabric-helper/wallet/wallet';
 
-const channelName = envOrDefault('CHANNEL_NAME', 'mychannel');
-const chaincodeName = envOrDefault('CHAINCODE_NAME', 'asset-transfer');
-const odooUserChaincodeName = envOrDefault('CHAINCODE_NAME_ODOO_USER', 'odoo-user');
+// const channelName = envOrDefault('CHANNEL_NAME', 'mychannel');
+// const chaincodeName = envOrDefault('CHAINCODE_NAME', 'asset-transfer');
+// const odooUserChaincodeName = envOrDefault('CHAINCODE_NAME_ODOO_USER', 'odoo-user');
 
 const mspId = envOrDefault('MSP_ID', 'Org1MSP');
 //Local development and testing uncomment below code
@@ -34,20 +33,125 @@ console.log("certPath " + certPath);
 console.log("tlsCertPath " + tlsCertPath);
 const peerEndpoint = "test-network-org1-peer1-peer.localho.st:443";
 const peerHostAlias = "test-network-org1-peer1-peer.localho.st";
+
 export class Connection {
     public static contract: Contract;
     public static odooUserContract: Contract;
     public static coconikoCoinContract: Contract;
     public static coconikoNFTContract: Contract;
     public static governanceTokenContract: Contract;
+
     private static _caClient: FabricCAServices;
     private static _ccp: CommonConnectionProfileHelper;
     private static _grpcClient: grpc.Client;
+    private static _wallet: Wallet;
+    private static _pgManager: PostgreSQLManager;
+
+    private _app: express.Application;
+
+    constructor(app: express.Application) {
+        this._app = app;
+    }
+
+    public async destroy() {
+        await this.close();
+    }
+
+    public async init() {
+        await this.initFabric();
+    }
+
+    public async close() {
+        if(Connection._pgManager) {
+            await Connection._pgManager.close();
+        }
+
+        if(Connection._grpcClient) {
+            Connection._grpcClient.close();
+        }
+    }
+
+    private async initFabric(): Promise<void> {
+        logger.info('Connecting to Fabric network with mspid');
+        const wallet = await createWallet();
+        Connection._wallet = wallet;
+
+        const tlsCertPath = Connection.ccp.getCertificateAuthority(config.caHostName).tlsCACerts.path;
+        const tlsRootCert = await fs.readFile(tlsCertPath);
+        const tlsCredentials = grpc.credentials.createSsl(tlsRootCert);
+        Connection._grpcClient = new grpc.Client(peerEndpoint, tlsCredentials, {
+            'grpc.ssl_target_name_override': peerHostAlias,
+        });
+    
+        // in a real application this would be done on an administrative flow, and only once
+        await enrollAdmin(Connection.caClient, Connection.wallet, config.orgMSPID);
+        const identity = await wallet.get(config.admin);
+        if (!identity) {
+          throw new Error(
+            'An identity for the user does not exist in the wallet'
+          );
+        }
+  
+        // build a user object for authenticating with the CA
+        const provider = wallet
+          .getProviderRegistry()
+          .getProvider(identity.type);
+  
+        const gateway = connect({
+            client: Connection.client,
+            identity: provider.getGatewayIdentity(identity),
+            signer: provider.getGatewaySigner(identity),
+            hash: hash.sha256,
+            // Default timeouts for different gRPC calls
+            evaluateOptions: () => {
+                return { deadline: Date.now() + 5000 }; // 5 seconds
+            },
+            endorseOptions: () => {
+                return { deadline: Date.now() + 15000 }; // 15 seconds
+            },
+            submitOptions: () => {
+                return { deadline: Date.now() + 5000 }; // 5 seconds
+            },
+            commitStatusOptions: () => {
+                return { deadline: Date.now() + 60000 }; // 1 minute
+            },
+        });
+  
+        if(config.postgreSqlUri) {
+          const dbManager = await PostgreSQLManager.create(
+            config.postgreSqlUri, 
+            config.postgreSqlDb!, 
+            config.postgreSqlAdminDb,
+            gateway);
+
+          Connection._pgManager = dbManager;
+        }
+    }
+
+    public static get pgManager(): PostgreSQLManager {
+        if (!Connection._pgManager) {
+            throw new Error('PostgreSQL manager not initialized');
+        }
+        return Connection._pgManager;
+    }
+
+    public static get wallet(): Wallet {
+        if (!Connection._wallet) {
+            throw new Error('Wallet not initialized');
+        }
+        return Connection._wallet;
+    }
+
+    public static get client(): grpc.Client {
+        if (!Connection._grpcClient) {
+            throw new Error('GRPC client not initialized');
+        }
+        return Connection._grpcClient;
+    }
 
     public static async grpcClient() :Promise<grpc.Client> {
         if (!Connection._grpcClient) {
-            // Connection._grpcClient = await newGrpcConnection();
-            const tlsCertPath = Connection.ccp().getCertificateAuthority(config.caHostName).tlsCACerts.path;
+            const tlsCertPath = Connection.ccp.getCertificateAuthority(config.caHostName).tlsCACerts.path;
             const tlsRootCert = await fs.readFile(tlsCertPath);
             const tlsCredentials = grpc.credentials.createSsl(tlsRootCert);
             Connection._grpcClient = new grpc.Client(peerEndpoint, tlsCredentials, {
@@ -56,122 +160,19 @@ export class Connection {
         }
         return Connection._grpcClient;
     }
-    public static caClient() :FabricCAServices {
+
+    public static get caClient() :FabricCAServices {
         if (!Connection._caClient) {
             Connection._caClient = buildCAClient();
         }
         return Connection._caClient;
     }
-    public static ccp() :CommonConnectionProfileHelper {
+
+    public static get ccp() :CommonConnectionProfileHelper {
         if (!Connection._ccp) {
             Connection._ccp = new CommonConnectionProfileHelper(config.commonConnectionProfileFile, true);
         }
         return Connection._ccp;
-    }
-    public async init(app: express.Application) {
-        // build an in memory object with the network configuration (also known as a connection profile)
-
-        await initFabric(app);
-    }
-}
-
-async function initFabric(app: express.Application): Promise<void> {
-    logger.info('Connecting to Fabric network with mspid');
-    const wallet: Wallet = await createWallet();
-  
-    app.locals.wallet = wallet;
-  
-    // build an instance of the fabric ca services client based on
-    // the information in the network configuration
-    const caClient = Connection.caClient();
-  
-    // in a real application this would be done on an administrative flow, and only once
-    // TODO: need to reenroll
-    await enrollAdmin(caClient, wallet, config.orgMSPID);
-  
-    if(config.postgreSqlUri) {
-      const dbManager = await PostgreSQLManager.create(
-        config.postgreSqlUri, 
-        config.postgreSqlDb!, 
-        config.postgreSqlAdminDb);
-  
-      app.locals.dbManager = dbManager;
-    }
-
-    // The gRPC client connection should be shared by all Gateway connections to this endpoint.
-    const client = await Connection.grpcClient();
-
-    // Must use an admin to register a new user
-    const adminIdentity = await wallet.get(config.admin);
-    if (!adminIdentity) {
-      console.log(
-        'An identity for the admin user does not exist in the wallet'
-      );
-      console.log('Enroll the admin user before retrying');
-      throw new Error(
-        'An identity for the admin user does not exist in the wallet'
-      );
-    }
-
-    // build a user object for authenticating with the CA
-    const provider = wallet
-      .getProviderRegistry()
-      .getProvider(adminIdentity.type);
-
-    const identity = provider.getGatewayIdentity(adminIdentity);
-    const signer = provider.getGatewaySigner(adminIdentity);
-
-    const gateway = connect({
-        client,
-        identity: identity,
-        signer: signer,
-        hash: hash.sha256,
-        // Default timeouts for different gRPC calls
-        evaluateOptions: () => {
-            return { deadline: Date.now() + 5000 }; // 5 seconds
-        },
-        endorseOptions: () => {
-            return { deadline: Date.now() + 15000 }; // 15 seconds
-        },
-        submitOptions: () => {
-            return { deadline: Date.now() + 5000 }; // 5 seconds
-        },
-        commitStatusOptions: () => {
-            return { deadline: Date.now() + 60000 }; // 1 minute
-        },
-    });
-
-    try {
-        // Get a network instance representing the channel where the smart contract is deployed.
-        const network = gateway.getNetwork(channelName);
-
-        // Get the smart contract from the network.
-        const contract = network.getContract(chaincodeName);
-        Connection.contract = contract;
-        
-        const odooUserContract = network.getContract(odooUserChaincodeName);
-        Connection.odooUserContract = odooUserContract;
-        
-        const coconikoCoinContract = network.getContract(config.coconikoChainCode, config.coconikoCoinContract);
-        Connection.coconikoCoinContract = coconikoCoinContract;
-
-        const coconikoNFTContract = network.getContract(config.coconikoChainCode, config.coconikoNFTContract);
-        Connection.coconikoNFTContract = coconikoNFTContract;
-
-        const governanceTokenContract = network.getContract(config.coconikoChainCode, config.coconikoGovernanceTokenContract);
-        Connection.governanceTokenContract = governanceTokenContract;
-
-        // Initialize a set of asset data on the ledger using the chaincode 'InitLedger' function.
-        //        await initLedger(contract);
-
-
-    } catch (e: any) {
-        console.log('sample log');
-        console.log(e.message);
-    } finally {
-        // console.log('error log ');
-        // gateway.close();
-        // client.close();
     }
 }
 
