@@ -1,10 +1,13 @@
 import express, { Request, Response } from 'express';
-import { body, param, query, validationResult } from 'express-validator';
+import { body } from 'express-validator';
 import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import { logger } from '../logger';
-import { CoconikoCoin } from './coconiko-coin';
-
-const { CREATED, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, NOT_FOUND } = StatusCodes;
+import { CoconikoDebug } from './coconiko-debug';
+import { validateRequest } from '../middlewares/validation.middleware';
+import { getCoconikoCoinContract } from './common';
+import { handleError } from '../errors';
+ 
+const { BAD_REQUEST, OK } = StatusCodes;
 const assetsRouter = express.Router();
 
 assetsRouter.post(
@@ -13,40 +16,17 @@ assetsRouter.post(
   body('query', 'must be a object').isObject().notEmpty(),
   body('pageSize', 'must be a interger').isInt().notEmpty(),
   body('bookmark', 'must be a string'),
+  validateRequest,
   async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(BAD_REQUEST).json({
-        status: getReasonPhrase(BAD_REQUEST),
-        reason: 'VALIDATION_ERROR',
-        message: 'Invalid request body',
-        timestamp: new Date().toISOString(),
-        errors: errors.array(),
-      });
-    }
     try {
       const { query, pageSize, bookmark = "" } = req.body;
       
-      const coinService = new CoconikoCoin();
-      const result = await coinService.queryAssetsWithPagination(query, pageSize, bookmark);
-      
+      const service = new CoconikoDebug(getCoconikoCoinContract(req));
+      const result = await service.queryAssetsWithPagination(query, pageSize, bookmark);
+
       return res.status(OK).json({ result });
     } catch (err) {
-      logger.error({ err }, req.url);
-      if (req.app.get('env') === 'development') {
-        let message = err;
-        if (err instanceof Error) {
-          message = err.message;
-        }
-        return res.status(INTERNAL_SERVER_ERROR).json({
-          status: message,
-          timestamp: new Date().toISOString(),
-        });
-      }
-      return res.status(INTERNAL_SERVER_ERROR).json({
-        status: getReasonPhrase(INTERNAL_SERVER_ERROR),
-        timestamp: new Date().toISOString(),
-      });
+      return handleError(err, req, res);
     }
   }
 );
@@ -56,18 +36,8 @@ assetsRouter.post(
   body().isObject().withMessage('body must be an object'),
   body('queryString', 'must be a valid SQL SELECT statement').isString().notEmpty(),
   body('params', 'must be an object').optional().isObject(),
+  validateRequest,
   async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(BAD_REQUEST).json({
-        status: getReasonPhrase(BAD_REQUEST),
-        reason: 'VALIDATION_ERROR',
-        message: 'Invalid request body',
-        timestamp: new Date().toISOString(),
-        errors: errors.array(),
-      });
-    }
-
     try {
       const { queryString, params = {} } = req.body;
       
@@ -81,23 +51,13 @@ assetsRouter.post(
           errors: [{ msg: 'Query must be a SELECT statement', param: 'queryString' }]
         });
       }
-      
-      const coinService = new CoconikoCoin();
-      const result = await coinService.executePostgresQuery(queryString, params);
-      
+
+      const service = new CoconikoDebug(getCoconikoCoinContract(req));
+      const result = await service.executePostgresQuery(queryString, params);
+
       return res.status(OK).json({ result });
     } catch (err) {
-      logger.error({ err }, 'PostgreSQL query failed');
-      if (req.app.get('env') === 'development') {
-        return res.status(INTERNAL_SERVER_ERROR).json({
-          status: err instanceof Error ? err.message : 'Unknown error',
-          timestamp: new Date().toISOString(),
-        });
-      }
-      return res.status(INTERNAL_SERVER_ERROR).json({
-        status: getReasonPhrase(INTERNAL_SERVER_ERROR),
-        timestamp: new Date().toISOString(),
-      });
+      return handleError(err, req, res);
     }
   }
 );

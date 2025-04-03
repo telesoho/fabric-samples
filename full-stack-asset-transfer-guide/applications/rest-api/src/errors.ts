@@ -1,4 +1,8 @@
+import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import { logger } from './logger';
+import  { Request, Response } from 'express';
+
+const { CREATED, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, NOT_FOUND } = StatusCodes;
 
 export class UserExistsError extends Error {
   constructor(message: string) {
@@ -64,3 +68,24 @@ export class AssetNotFoundError extends ContractError {
     this.name = 'AssetNotFoundError';
   }
 }
+
+// Utility function to handle errors
+export const handleError = (err: unknown, req: Request, res: Response) => {
+  logger.error({ err }, req.url || 'Error processing request');
+  
+  if (req.app.get('env') === 'development') {
+    let message = err;
+    if (err instanceof Error) {
+      message = err.message;
+    }
+    return res.status(INTERNAL_SERVER_ERROR).json({
+      status: message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  return res.status(INTERNAL_SERVER_ERROR).json({
+    status: getReasonPhrase(INTERNAL_SERVER_ERROR),
+    timestamp: new Date().toISOString(),
+  });
+};

@@ -24,6 +24,6 @@ export class CoconikoRouter {
         app.use('/api/coconiko', authenticateApiKey, coconikoCoinRouter);
         app.use('/api/coconiko', authenticateApiKey, coconikoNFTRouter);
         app.use('/api/coconiko', authenticateApiKey, coconikoGovernanceRouter);
-        app.use('/api/coconiko', authenticateApiKey, coconikoDebugRouter);              
+        app.use('/api/coconiko', authenticateApiKey, coconikoDebugRouter);
     }
 }

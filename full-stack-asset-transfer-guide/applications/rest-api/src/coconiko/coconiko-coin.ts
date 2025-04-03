@@ -64,11 +64,7 @@ export class CoconikoCoin {
      * Get balances for multiple users
      */
     async BalanceOf(owners: string[]): Promise<any> {
-        const result = await this.#contract.evaluateTransaction(
-            'BalanceOf', 
-            JSON.stringify(owners)
-        );
-        return JSON.parse(utf8Decoder.decode(result));
+        return Connection.pgManager.balanceOf(owners);
     }
 
     /**
@@ -167,31 +163,6 @@ export class CoconikoCoin {
             'GetSummary', 
             startDate || '', 
             endDate || ''
-        );
-        return JSON.parse(utf8Decoder.decode(result));
-    }
-
-    /**
-     * Query assets with pagination
-     */
-    async queryAssetsWithPagination(query: any, pageSize: number, bookmark: string = ""): Promise<any> {
-        const result = await this.#contract.evaluateTransaction(
-            'queryAssetsWithPagination', 
-            JSON.stringify(query), 
-            pageSize.toString(), 
-            bookmark
-        );
-        return JSON.parse(utf8Decoder.decode(result));
-    }
-
-    /**
-     * Execute PostgreSQL query (SELECT only)
-     */
-    async executePostgresQuery(queryString: string, params: any = {}): Promise<any> {
-        const result = await this.#contract.evaluateTransaction(
-            'ExecutePostgresQuery', 
-            queryString, 
-            JSON.stringify(params)
         );
         return JSON.parse(utf8Decoder.decode(result));
     }
