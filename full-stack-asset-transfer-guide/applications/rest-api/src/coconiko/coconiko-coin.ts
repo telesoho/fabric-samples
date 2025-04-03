@@ -161,12 +161,16 @@ export class CoconikoCoin {
      * Get summary information for active users
      */
     async getSummary(startDate?: Date, endDate?: Date): Promise<any> {
-        const result = await this.#contract?.evaluateTransaction(
-            'GetSummary', 
-            startDate?.toISOString() || '', 
-            endDate?.toISOString() || ''
-        );
-        return JSON.parse(utf8Decoder.decode(result));
+        const data = await Connection.pgManager.getUserSummary({
+          startDate: startDate,
+          endDate: endDate
+        })
+        const result = {
+          totalMinted: data.receivedFromSystem,
+          totalUsed: data.spentToOthers
+        }
+  
+        return result;  
     }
 }
 

@@ -4,7 +4,7 @@ module.exports = {
       name: 'fabric_api',
       script: './dist/index.js',
       env_development: {
-        PORT: 8080,
+        PORT: 3000,
         NODE_ENV: 'development',
       },
       node_args:"--trace-warnings",

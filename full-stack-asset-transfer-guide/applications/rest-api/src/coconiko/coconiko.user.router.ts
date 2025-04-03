@@ -76,7 +76,12 @@ assetsRouter.put(
       const coinService = new CoconikoCoin(coconikoCoinContract);
       const result = await coinService.CreateUserAccount();
       
-      return res.status(OK).json(result);
+      return res.status(OK).json({
+        user_name: username,
+        app_id: req.app.locals.appInfo.app_id,
+        account: result,
+        timestamp: new Date().toISOString(),
+      });
     } catch (err) {
       logger.error({ err }, 'Error processing create user');
       if (err instanceof UserExistsError) {

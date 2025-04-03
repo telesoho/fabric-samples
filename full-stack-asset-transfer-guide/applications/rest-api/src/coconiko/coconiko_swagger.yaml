@@ -89,13 +89,23 @@ paths:
                   timestamp:
                     type: string
                     format: date-time
-                example:
-                  user_name: "test"
-                  app_id: "coconiko"
-                  account:
-                    id: "x509::/OU=client/CN=test.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA"
-                    role: "user"
-                  timestamp: "2022-01-01T00:00:00.000Z"
+                example: {
+                  "user_name": "test100",
+                  "app_id": "coconiko",
+                  "account": {
+                    "docType": "user-info",
+                    "userId": "test100.coconiko",
+                    "accountId": "x509::/OU=client/CN=test100.coconiko::/C=JP/ST=Tokyo/O=Social Design Lab./OU=Local Coin Net/CN=Local Coin Net SDL Root CA",
+                    "role": "user",
+                    "balance": 0,
+                    "active": true,
+                    "nfts": [],
+                    "created": "2025-04-03T10:00:22.813Z",
+                    "updated": "2025-04-03T10:00:22.813Z"
+                  },
+                  "timestamp": "2025-04-03T10:00:25.250Z"                
+                }
+
         '201':
           description: ユーザーが存在しています
           content:

@@ -91,8 +91,8 @@ assetsRouter.get(
   async (req: Request, res: Response) => {
     try {
       const nftService = new CoconikoNFT(getNFTContract(req));
-      const result = await nftService.getUserNFTs();
-      
+      const result = await nftService.getUserNFTs(req.app.locals.userId);
+
       return res.status(OK).json({ result });
     } catch (err) {
       return handleError(err, req, res);

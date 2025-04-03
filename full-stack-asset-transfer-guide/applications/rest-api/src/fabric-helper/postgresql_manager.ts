@@ -686,9 +686,8 @@ class PostgreSQLManager {
     }
 
 
-    public async getMyNFTs(accountId: string): Promise<object> {
+    public async getMyNFTs(userId: string): Promise<object> {
         try {
-            console.debug(accountId);
             const nfts = await this.db.manyOrNone<{
                 nft_id: string;
                 owner: string;
@@ -703,10 +702,12 @@ class PostgreSQLManager {
                     owner,
                     creator,
                     metadata,
-                    created_at,
+                    t.created_at,
                     burned
                 FROM ${COCONIKO_SCHEMA}.${NFT_TABLE} t
-                WHERE t.owner = '${accountId}'
+                LEFT JOIN ${COCONIKO_SCHEMA}.${USER_TABLE} u
+                    ON u.account_id = t.owner
+                WHERE u.user_id = '${userId}'
             `);
 
             if(!nfts) {

@@ -52,10 +52,8 @@ export class CoconikoNFT {
     /**
      * Get all NFTs owned by a user
      */
-    async getUserNFTs(): Promise<any> {
-        const result = await this.#contract?.evaluateTransaction(
-            'GetUserNFTs'
-        );
-        return JSON.parse(utf8Decoder.decode(result));
+    async getUserNFTs(accountId: string): Promise<any> {
+        const result = await Connection.pgManager.getMyNFTs(accountId);
+        return result;
     }
 } 

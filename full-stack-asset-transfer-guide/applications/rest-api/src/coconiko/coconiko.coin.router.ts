@@ -200,8 +200,8 @@ router.get(
   validateRequest,
   async (req: Request, res: Response) => {
     try {
-      const startDate = parseDate(req.query.startDate as string | undefined);
-      const endDate = parseDate(req.query.endDate as string | undefined);
+      const startDate = parseDate(req.query.startDate);
+      const endDate = parseDate(req.query.endDate);
       
       const coinService = new CoconikoCoin(getCoconikoCoinContract(req));
       const result = await coinService.getSummary(startDate, endDate);
