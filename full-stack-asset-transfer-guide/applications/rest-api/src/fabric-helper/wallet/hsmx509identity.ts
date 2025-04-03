@@ -4,6 +4,7 @@ import {HSMCryptoSetting, ICryptoSuite,  User} from 'fabric-common';
 import {Identity} from './identity';
 import {IdentityData} from './identitydata';
 import {IdentityProvider} from './identityprovider';
+import { Identity as GatewayIdentity, Signer } from '@hyperledger/fabric-gateway';
 
 
 
@@ -54,6 +55,12 @@ export class HsmX509Provider implements IdentityProvider {
 		// options.software must be set to false to enable HSM
 		const cryptoOptions = Object.assign({}, options, {software: false});
 		this.cryptoSuite = User.newCryptoSuite(cryptoOptions);
+	}
+	getGatewayIdentity(identity: Identity): GatewayIdentity {
+		throw new Error('Method not implemented.');
+	}
+	getGatewaySigner(identity: Identity): Signer {
+		throw new Error('Method not implemented.');
 	}
 
 	public getCryptoSuite(): ICryptoSuite {
