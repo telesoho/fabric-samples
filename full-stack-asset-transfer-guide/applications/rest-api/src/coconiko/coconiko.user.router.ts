@@ -5,12 +5,11 @@ import { logger } from '../logger';
 import { CoconikoCoin } from './coconiko-coin';
 import { registerAndEnrollUser } from '../fabric-helper/ca_util';
 import * as config from '../config';
-import { Connection } from '../connection';
-import { connect, Contract, Gateway, hash, Network } from '@hyperledger/fabric-gateway';
+import { Connection, getCoconikoCoinContract } from '../connection';
+import { connect, hash } from '@hyperledger/fabric-gateway';
 import { UserExistsError } from '../errors';
 import { validateRequest } from '../middlewares/validation.middleware';
 import { handleError } from '../errors';
-import { getCoconikoCoinContract } from './common';
 
 
 const { CREATED, OK } = StatusCodes;

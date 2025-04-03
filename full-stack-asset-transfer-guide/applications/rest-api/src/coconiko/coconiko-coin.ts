@@ -1,19 +1,14 @@
 import { Contract } from '@hyperledger/fabric-gateway';
 import { TextDecoder } from 'util';
 import { Connection } from '../connection';
-import { logger } from '../logger';
 
 const utf8Decoder = new TextDecoder();
 
 export class CoconikoCoin {
-    readonly #contract: Contract;
+    readonly #contract?: Contract;
 
     constructor(contract?: Contract) {
-        if (!contract) {
-            this.#contract = Connection.coconikoCoinContract;
-        } else {
-            this.#contract = contract;
-        }
+        this.#contract = contract;
     }
 
     /**
@@ -22,7 +17,7 @@ export class CoconikoCoin {
      */
     async CreateUserAccount(): Promise<any> {
         try {
-            const result = await this.#contract.submitTransaction('CreateUserAccount');
+            const result = await this.#contract?.submitTransaction('CreateUserAccount');
             return JSON.parse(utf8Decoder.decode(result));
         } catch (error) {
             throw new Error(`Failed to create user account: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -33,7 +28,7 @@ export class CoconikoCoin {
      * Get information about a user
      */
     async ClientAccountInfo(): Promise<any> {
-        const result = await this.#contract.evaluateTransaction('ClientAccountInfo');
+        const result = await this.#contract?.evaluateTransaction('ClientAccountInfo');
         return JSON.parse(utf8Decoder.decode(result));
     }
 
@@ -41,7 +36,7 @@ export class CoconikoCoin {
      * Activates or deactivates a user
      */
     async ActiveUser(active: boolean): Promise<any> {
-        const result = await this.#contract.submitTransaction(
+        const result = await this.#contract?.submitTransaction(
             'ActiveUser', 
             active.toString()
         );
@@ -52,7 +47,7 @@ export class CoconikoCoin {
      * Mint new coins for a user
      */
     async Mint(amount: number, days: number = 0): Promise<any> {
-        const result = await this.#contract.submitTransaction(
+        const result = await this.#contract?.submitTransaction(
             'Mint', 
             amount.toString(), 
             days.toString()
@@ -71,7 +66,7 @@ export class CoconikoCoin {
      * Transfer coins to another user
      */
     async Transfer(toAccountId: string, amount: number): Promise<any> {
-        const result = await this.#contract.submitTransaction(
+        const result = await this.#contract?.submitTransaction(
             'Transfer', 
             toAccountId, 
             amount.toString()
@@ -83,7 +78,7 @@ export class CoconikoCoin {
      * Transfer coins from one user to another (admin only)
      */
     async TransferFrom(fromAccountId: string, toAccountId: string, amount: number): Promise<any> {
-        const result = await this.#contract.submitTransaction(
+        const result = await this.#contract?.submitTransaction(
             'TransferFrom', 
             fromAccountId, 
             toAccountId, 
@@ -95,21 +90,27 @@ export class CoconikoCoin {
     /**
      * Get total supply of coins
      */
-    async getTotalSupply(startDate?: string, endDate?: string, activeUserOnly: boolean = true): Promise<any> {
-        const result = await this.#contract.evaluateTransaction(
-            'TotalSupply', 
-            startDate || '', 
-            endDate || '', 
-            activeUserOnly.toString()
-        );
-        return JSON.parse(utf8Decoder.decode(result));
+    async getTotalSupply(startDate?: Date, endDate?: Date, activeUserOnly: boolean = true): Promise<any> {
+      const total = await Connection.pgManager.getTotalSupply({
+        startDate,
+        endDate,
+        activeUserOnly
+      });
+
+      const ret: Record<string, any> = {};
+      if(activeUserOnly) {
+        ret.totalActiveSupply = total;
+      } else {
+        ret.totalSupply = total;
+      }
+      return ret;
     }
 
     /**
      * Burn expired coins
      */
     async burnExpired(ownerAccountId: string, expirationDate: string): Promise<any> {
-        const result = await this.#contract.submitTransaction(
+        const result = await this.#contract?.submitTransaction(
             'BurnExpired', 
             ownerAccountId, 
             expirationDate
@@ -121,36 +122,37 @@ export class CoconikoCoin {
      * Get transaction event history for a user's account
      */
     async getClientAccountEventHistory(
-        startDate?: string, 
-        endDate?: string, 
+        startDate?: Date, 
+        endDate?: Date, 
         pageSize?: number, 
         skip?: number
     ): Promise<any> {
         const args = [
-            startDate || '',
-            endDate || '',
+            startDate?.toISOString()||"",
+            endDate?.toISOString()||"",
             pageSize !== undefined ? pageSize.toString() : '',
             skip !== undefined ? skip.toString() : ''
         ];
-        
-        const result = await this.#contract.evaluateTransaction(
-            'GetClientAccountEventHistory', 
-            ...args
-        );
-        return JSON.parse(utf8Decoder.decode(result));
+
+        // const result = await this.#contract.evaluateTransaction(
+        //     'GetClientAccountEventHistory', 
+        //     ...args
+        // );
+        // return JSON.parse(utf8Decoder.decode(result));
+        return args;
     }
 
     /**
      * Get count of transaction events for a user's account
      */
     async getClientAccountEventHistoryCount(
-        startDate?: string, 
-        endDate?: string
+        startDate?: Date, 
+        endDate?: Date
     ): Promise<any> {
-        const result = await this.#contract.evaluateTransaction(
+        const result = await this.#contract?.evaluateTransaction(
             'GetClientAccountEventHistoryCount', 
-            startDate || '',
-            endDate || ''
+            startDate?.toISOString() || '',
+            endDate?.toISOString() || ''
         );
         return JSON.parse(utf8Decoder.decode(result));
     }
@@ -158,11 +160,11 @@ export class CoconikoCoin {
     /**
      * Get summary information for active users
      */
-    async getSummary(startDate?: string, endDate?: string): Promise<any> {
-        const result = await this.#contract.evaluateTransaction(
+    async getSummary(startDate?: Date, endDate?: Date): Promise<any> {
+        const result = await this.#contract?.evaluateTransaction(
             'GetSummary', 
-            startDate || '', 
-            endDate || ''
+            startDate?.toISOString() || '', 
+            endDate?.toISOString() || ''
         );
         return JSON.parse(utf8Decoder.decode(result));
     }

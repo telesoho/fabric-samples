@@ -1,25 +1,20 @@
 import { Contract } from '@hyperledger/fabric-gateway';
 import { TextDecoder } from 'util';
-import { Connection } from '../connection';
 
 const utf8Decoder = new TextDecoder();
 
 export class GovernanceToken {
-    readonly #contract: Contract;
+    readonly #contract?: Contract;
 
     constructor(contract?: Contract) {
-        if (!contract) {
-            this.#contract = Connection.governanceTokenContract;
-        } else {
-            this.#contract = contract;
-        }
+        this.#contract = contract;
     }
 
     /**
      * Create a new voting proposal
      */
     async createProposal(proposalId: string, title: string, description: string, options: string[], endDate: string): Promise<any> {
-        const result = await this.#contract.submitTransaction(
+        const result = await this.#contract?.submitTransaction(
             'MintProposal',
             proposalId,
             title,
@@ -42,7 +37,7 @@ export class GovernanceToken {
             args.push(userId);
         }
         
-        const result = await this.#contract.submitTransaction(
+        const result = await this.#contract?.submitTransaction(
             'MintVoteNFT',
             ...args
         );
@@ -53,7 +48,7 @@ export class GovernanceToken {
      * Cast a vote
      */
     async castVote(proposalId: string, selectedOption: string, nftTokenId: string): Promise<any> {
-        const result = await this.#contract.submitTransaction(
+        const result = await this.#contract?.submitTransaction(
             'Cast',
             proposalId,
             selectedOption,
@@ -66,7 +61,7 @@ export class GovernanceToken {
      * Get voting results
      */
     async getVotingResults(proposalId: string): Promise<any> {
-        const result = await this.#contract.evaluateTransaction(
+        const result = await this.#contract?.evaluateTransaction(
             'GetVotingResults',
             proposalId
         );

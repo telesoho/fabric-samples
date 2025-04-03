@@ -1,184 +1,103 @@
 import express, { Request, Response } from 'express';
-import { body, param, query, validationResult } from 'express-validator';
-import { getReasonPhrase, StatusCodes } from 'http-status-codes';
-import { logger } from '../logger';
+import { body, param } from 'express-validator';
+import {  StatusCodes } from 'http-status-codes';
 import { CoconikoNFT } from './nft';
-import * as config from '../config';
-import { Gateway, Network } from '@hyperledger/fabric-gateway';
+import { getNFTContract } from '../connection';
+import { handleError } from '../errors';
+import { validateRequest } from '../middlewares/validation.middleware';
 
-const { CREATED, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, NOT_FOUND } = StatusCodes;
+const { OK } = StatusCodes;
 const assetsRouter = express.Router();
 
+/**
+ * Route to mint a new NFT
+ */
 assetsRouter.post(
   '/nft/Mint',
-  body().isObject().withMessage('body must be an object'),
-  body('metadata', 'NFT metadata object').isObject().notEmpty(),
-  body('metadata.name', 'NFT name must be a string').isString().notEmpty(),
-  body('metadata.price', 'NFT price must be a number').isNumeric().optional(),
-  body('metadata.description', 'NFT description must be a string').optional().isString(),
-  body('metadata.image', 'Invalid image URL format').isURL(),
+  [
+    body().isObject().withMessage('body must be an object'),
+    body('metadata', 'NFT metadata object').isObject().notEmpty(),
+    body('metadata.name', 'NFT name must be a string').isString().notEmpty(),
+    body('metadata.price', 'NFT price must be a number').isNumeric().optional(),
+    body('metadata.description', 'NFT description must be a string').optional().isString(),
+    body('metadata.image', 'Invalid image URL format').isURL(),
+    validateRequest
+  ],
   async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(BAD_REQUEST).json({
-        status: getReasonPhrase(BAD_REQUEST),
-        reason: 'VALIDATION_ERROR',
-        message: 'Invalid request body',
-        timestamp: new Date().toISOString(),
-        errors: errors.array(),
-      });
-    }
-
     try {
-      const userId = req.user as string;
       const { metadata } = req.body;
-      const gateway = req.app.locals.gateway;
-      const network = gateway.getNetwork(config.channelName);
-      const coconikoNFTContract = network.getContract(config.coconikoChainCode, config.coconikoNFTContract);
-
-      const nftService = new CoconikoNFT(coconikoNFTContract);
-      const result = await nftService.mintNFT(userId, metadata);
+      const nftService = new CoconikoNFT(getNFTContract(req));
+      const result = await nftService.mintNFT(metadata);
       
       return res.status(OK).json({ result });
     } catch (err) {
-      logger.error({ err }, req.url);
-      if (req.app.get('env') === 'development') {
-        let message = err;
-        if (err instanceof Error) {
-          message = err.message;
-        }
-        return res.status(INTERNAL_SERVER_ERROR).json({
-          status: message,
-          timestamp: new Date().toISOString(),
-        });
-      }
-      return res.status(INTERNAL_SERVER_ERROR).json({
-        status: getReasonPhrase(INTERNAL_SERVER_ERROR),
-        timestamp: new Date().toISOString(),
-      });
+      return handleError(err, req, res);
     }
   }
 );
 
+/**
+ * Route to transfer an NFT to another user
+ */
 assetsRouter.post(
   '/nft/Transfer',
-  body().isObject().withMessage('Request body must be an object'),
-  body('tokenId', 'NFT token ID must be a non-empty string').isString().notEmpty(),
-  body('from', 'Sender account ID must be a valid string').isString().optional(),
-  body('to', 'Recipient account ID must be a valid string').isString().notEmpty(),
+  [
+    body().isObject().withMessage('Request body must be an object'),
+    body('tokenId', 'NFT token ID must be a non-empty string').isString().notEmpty(),
+    body('from', 'Sender account ID must be a valid string').isString().optional(),
+    body('to', 'Recipient account ID must be a valid string').isString().notEmpty(),
+    validateRequest
+  ],
   async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(BAD_REQUEST).json({
-        status: getReasonPhrase(BAD_REQUEST),
-        reason: 'VALIDATION_ERROR',
-        message: 'Invalid request body',
-        timestamp: new Date().toISOString(),
-        errors: errors.array(),
-      });
-    }
-
     try {
-      const userId = req.user as string;
       const { tokenId, from, to } = req.body;
-
-      const gateway:Gateway = req.app.locals.gateway;
-      const network:Network = gateway.getNetwork(config.channelName);
-      const coconikoNFTContract = network.getContract(config.coconikoChainCode, config.coconikoNFTContract);
-
-      const nftService = new CoconikoNFT(coconikoNFTContract);
+      const nftService = new CoconikoNFT(getNFTContract(req));
+      const result = await nftService.transferNFT(tokenId, to, from);
       
-      const result = await nftService.transferNFT(userId, tokenId, to, from);
       return res.status(OK).json({ result });
     } catch (err) {
-      logger.error({ err }, req.url);
-      if (req.app.get('env') === 'development') {
-        const message = err instanceof Error ? err.message : err;
-        return res.status(INTERNAL_SERVER_ERROR).json({
-          status: message,
-          timestamp: new Date().toISOString(),
-        });
-      }
-      return res.status(INTERNAL_SERVER_ERROR).json({
-        status: getReasonPhrase(INTERNAL_SERVER_ERROR),
-        timestamp: new Date().toISOString(),
-      });
+      return handleError(err, req, res);
     }
   }
 );
 
+/**
+ * Route to get NFT information by token ID
+ */
 assetsRouter.get(
   '/nft/:tokenId',
-  param('tokenId', 'NFT token ID must be a valid string').isString().notEmpty(),
+  [
+    param('tokenId', 'NFT token ID must be a valid string').isString().notEmpty(),
+    validateRequest
+  ],
   async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(BAD_REQUEST).json({
-        status: getReasonPhrase(BAD_REQUEST),
-        reason: 'VALIDATION_ERROR',
-        message: 'Invalid path parameter',
-        timestamp: new Date().toISOString(),
-        errors: errors.array(),
-      });
-    }
-
     try {
       const { tokenId } = req.params;
-      
-      const gateway: Gateway = req.app.locals.gateway;
-      const network: Network = gateway.getNetwork(config.channelName);
-      const coconikoNFTContract = network.getContract(config.coconikoChainCode, config.coconikoNFTContract);
-
-      const nftService = new CoconikoNFT(coconikoNFTContract);
+      const nftService = new CoconikoNFT(getNFTContract(req));
       const result = await nftService.getNFTInfo(tokenId);
 
       return res.status(OK).json({ result });
     } catch (err) {
-      logger.error({ err }, req.url);
-      if (req.app.get('env') === 'development') {
-        const message = err instanceof Error ? err.message : err;
-        return res.status(INTERNAL_SERVER_ERROR).json({
-          status: message,
-          timestamp: new Date().toISOString(),
-        });
-      }
-      return res.status(INTERNAL_SERVER_ERROR).json({
-        status: getReasonPhrase(INTERNAL_SERVER_ERROR),
-        timestamp: new Date().toISOString(),
-      });
+      return handleError(err, req, res);
     }
   }
 );
 
+/**
+ * Route to get all NFTs owned by the requesting user
+ */
 assetsRouter.get(
   '/nft/my/NFTs',
   async (req: Request, res: Response) => {
     try {
-      const userId = req.user as string;
-      
-      const gateway = req.app.locals.gateway;
-      const network = gateway.getNetwork(config.channelName);
-      const coconikoNFTContract = network.getContract(config.coconikoChainCode, config.coconikoNFTContract);
-
-      const nftService = new CoconikoNFT(coconikoNFTContract);
-      const result = await nftService.getUserNFTs(userId);
-      network.close();
+      const nftService = new CoconikoNFT(getNFTContract(req));
+      const result = await nftService.getUserNFTs();
       
       return res.status(OK).json({ result });
     } catch (err) {
-      logger.error({ err }, req.url);
-      if (req.app.get('env') === 'development') {
-        const message = err instanceof Error ? err.message : err;
-        return res.status(INTERNAL_SERVER_ERROR).json({
-          status: message,
-          timestamp: new Date().toISOString(),
-        });
-      }
-      return res.status(INTERNAL_SERVER_ERROR).json({
-        status: getReasonPhrase(INTERNAL_SERVER_ERROR),
-        timestamp: new Date().toISOString(),
-      });
+      return handleError(err, req, res);
     }
   }
 );
+
 export { assetsRouter };

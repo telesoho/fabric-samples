@@ -4,8 +4,8 @@ import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import { logger } from '../logger';
 import { CoconikoDebug } from './coconiko-debug';
 import { validateRequest } from '../middlewares/validation.middleware';
-import { getCoconikoCoinContract } from './common';
 import { handleError } from '../errors';
+import { getCoconikoCoinContract } from '../connection';
  
 const { BAD_REQUEST, OK } = StatusCodes;
 const assetsRouter = express.Router();

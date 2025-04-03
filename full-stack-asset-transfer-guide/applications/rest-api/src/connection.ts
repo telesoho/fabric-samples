@@ -1,5 +1,5 @@
 import * as grpc from '@grpc/grpc-js';
-import { connect, Contract, hash, Identity, Signer, signers, Gateway } from '@hyperledger/fabric-gateway';
+import { connect, Contract, hash, Gateway, Network } from '@hyperledger/fabric-gateway';
 import * as path from 'path';
 import express from 'express';
 import { promises as fs } from 'fs';
@@ -11,7 +11,7 @@ import { logger } from './logger';
 import { CommonConnectionProfileHelper } from './fabric-helper/ccp';
 import FabricCAServices from 'fabric-ca-client';
 import { Wallet } from './fabric-helper/wallet/wallet';
-
+import { Request } from 'express';
 // const channelName = envOrDefault('CHANNEL_NAME', 'mychannel');
 // const chaincodeName = envOrDefault('CHAINCODE_NAME', 'asset-transfer');
 // const odooUserChaincodeName = envOrDefault('CHAINCODE_NAME_ODOO_USER', 'odoo-user');
@@ -35,12 +35,7 @@ const peerEndpoint = "test-network-org1-peer1-peer.localho.st:443";
 const peerHostAlias = "test-network-org1-peer1-peer.localho.st";
 
 export class Connection {
-    public static contract: Contract;
-    public static odooUserContract: Contract;
-    public static coconikoCoinContract: Contract;
-    public static coconikoNFTContract: Contract;
-    public static governanceTokenContract: Contract;
-
+    public static contract: Contract; 
     private static _caClient: FabricCAServices;
     private static _ccp: CommonConnectionProfileHelper;
     private static _grpcClient: grpc.Client;
@@ -182,3 +177,40 @@ export class Connection {
 function envOrDefault(key: string, defaultValue: string): string {
     return process.env[key] || defaultValue;
 }
+
+// Utility function to get contract instance
+export const getCoconikoCoinContract = (req: Request): Contract | undefined => {
+    const gateway: Gateway = req.app.locals.gateway;
+    if (!gateway) {
+        return undefined;
+    }
+    const network: Network = gateway.getNetwork(config.channelName);
+    return network.getContract(config.coconikoChainCode, config.coconikoCoinContract);
+};
+
+export const getOdooUserContract = (req: Request): Contract | undefined => {
+    const gateway: Gateway = req.app.locals.gateway;
+    if (!gateway) {
+        return undefined;
+    }
+    const network: Network = gateway.getNetwork(config.channelName);
+    return network.getContract(config.odooUserChainCode);
+};
+
+export const getNFTContract = (req: Request): Contract | undefined => {
+    const gateway: Gateway = req.app.locals.gateway;
+    if (!gateway) {
+        return undefined;
+    }
+    const network: Network = gateway.getNetwork(config.channelName);
+    return network.getContract(config.coconikoChainCode, config.coconikoNFTContract);
+};
+
+export const getGovernanceTokenContract = (req: Request): Contract | undefined => {
+    const gateway: Gateway = req.app.locals.gateway;
+    if (!gateway) {
+        return undefined;
+    }
+    const network: Network = gateway.getNetwork(config.channelName);
+    return network.getContract(config.coconikoChainCode,config.coconikoGovernanceTokenContract);
+};

@@ -6,14 +6,14 @@ import { TextDecoder } from 'util';
 const utf8Decoder = new TextDecoder();
 
 export class OdooUser {
-    readonly #contract: Contract;
+    readonly #contract?: Contract;
 
-    constructor(contract: Contract) {
+    constructor(contract?: Contract) {
         this.#contract = contract;
     }
 
     async accountInfo(): Promise<Object> {
-        const result = await this.#contract.evaluate('ClientAccountInfo');
+        const result = await this.#contract?.evaluate('ClientAccountInfo');
         return JSON.parse(utf8Decoder.decode(result));
     }
 }

@@ -246,6 +246,21 @@ function check_cc_meta() {
 }
 
 
+function invoke_chaincode() {
+  local cc_name=$1
+  shift
+
+  peer chaincode invoke \
+    -n              $cc_name \
+    -C              $CHANNEL_NAME \
+    -c              $@ \
+    --orderer       ${ORDERER_ENDPOINT} \
+    --tls --cafile  ${ORDERER_TLS_CERT} \
+    --connTimeout   15s
+  sleep 2
+}
+
+
 ###############################################################################
 # 31 : build, tag, push, install
 ###############################################################################
@@ -312,6 +327,7 @@ build_cc_typescript
 prepare_cc
 install_cc
 check_cc_meta
+invoke_chaincode $CHAINCODE_NAME '{"Args":["CoconikoCoinContract:Initialize"]}'
 
 # cc pod is up - is there a selector for the target sequence / rev?
 kubectl -n test-network describe pods -l app.kubernetes.io/created-by=fabric-builder-k8s

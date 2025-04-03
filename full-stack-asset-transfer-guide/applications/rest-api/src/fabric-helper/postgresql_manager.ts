@@ -179,9 +179,7 @@ class PostgreSQLManager {
                 await this.handleContractEvent(event);
             }
         } catch (error) {
-            console.error(`Error processing events for ${listenerName}:`, error);
-            logger.error(`Error processing events for ${listenerName}`, { error });
-            
+            console.error(`Error processing events for ${listenerName}:`, error);            
             // Try to restart the listener if possible
             const listener = this.getListeners().get(listenerName);
             if (listener && listener.active) {

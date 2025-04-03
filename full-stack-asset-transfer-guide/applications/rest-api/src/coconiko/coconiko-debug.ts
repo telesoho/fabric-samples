@@ -5,21 +5,17 @@ import { Connection } from '../connection';
 const utf8Decoder = new TextDecoder();
 
 export class CoconikoDebug {
-    readonly #contract: Contract;
+    readonly #contract?: Contract;
 
     constructor(contract?: Contract) {
-        if (!contract) {
-            this.#contract = Connection.coconikoCoinContract;
-        } else {
-            this.#contract = contract;
-        }
+        this.#contract = contract;
     }
 
     /**
      * Query assets with pagination
      */
     async queryAssetsWithPagination(query: any, pageSize: number, bookmark: string = ""): Promise<any> {
-        const result = await this.#contract.evaluateTransaction(
+        const result = await this.#contract?.evaluateTransaction(
             'queryAssetsWithPagination',
             JSON.stringify(query),
             pageSize.toString(),

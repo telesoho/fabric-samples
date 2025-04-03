@@ -1,17 +1,32 @@
 import express, { Request, Response } from 'express';
-import { body, param, query } from 'express-validator';
-import { getReasonPhrase, StatusCodes } from 'http-status-codes';
+import { body, query } from 'express-validator';
+import { StatusCodes } from 'http-status-codes';
 import { logger } from '../logger';
-import * as config from '../config';
 import { CoconikoCoin } from './coconiko-coin';
 import { validateRequest } from '../middlewares/validation.middleware';
-import { getCoconikoCoinContract } from './common';
 import { handleError } from '../errors';
+import { getCoconikoCoinContract } from '../connection';
 
-const { CREATED, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, NOT_FOUND } = StatusCodes;
-const assetsRouter = express.Router();
+const { OK } = StatusCodes;
+const router = express.Router();
 
-assetsRouter.post(
+// Utility functions
+const parseDate = (pDate: any): Date | undefined => {
+  return pDate instanceof Date ? pDate : undefined;
+};
+
+const parseOptionalInt = (value: any): number | undefined => {
+  return value ? parseInt(value) : undefined;
+};
+
+// Common validators
+const dateRangeValidators = [
+  query('startDate').optional().isISO8601().toDate().withMessage('Must be a valid ISO8601 date'),
+  query('endDate').optional().isISO8601().toDate().withMessage('Must be a valid ISO8601 date')
+];
+
+
+router.post(
   '/Mint',
   body().isObject().withMessage('body must be an object'),
   body('amount', '{Integer} amount amount of tokens to be minted').notEmpty(),
@@ -32,7 +47,28 @@ assetsRouter.post(
   }
 );
 
-assetsRouter.post(
+router.post(
+  '/BurnExpired',
+  body().isObject().withMessage('body must be an object'),
+  body('owner', 'must be a string').notEmpty(),
+  body('expirationDate').isISO8601().withMessage('Must be a valid ISO8601 date'),
+  validateRequest,
+  async (req: Request, res: Response) => {
+    try {
+      const { owner, expirationDate } = req.body;
+      
+      const coinService = new CoconikoCoin(getCoconikoCoinContract(req));
+      const result = await coinService.burnExpired(owner, expirationDate);
+      
+      return res.status(OK).json({ result });
+    } catch (err) {
+      return handleError(err, req, res);
+    }
+  }
+);
+
+// Balance and Transfer Routes
+router.post(
   '/BalanceOf',
   body('owners', 'Must be an string array of account id for whom to query the balance, min 0, max 1000').isArray({ min: 0, max: 1000 }),
   validateRequest,
@@ -50,7 +86,7 @@ assetsRouter.post(
   }
 );
 
-assetsRouter.post(
+router.post(
   '/Transfer',
   body().isObject().withMessage('body must be an object'),
   body('to', 'must be a string').notEmpty(),
@@ -71,7 +107,7 @@ assetsRouter.post(
   }
 );
 
-assetsRouter.post(
+router.post(
   '/TransferFrom',
   body().isObject().withMessage('body must be an object'),
   body('from', 'must be a string').notEmpty(),
@@ -93,16 +129,15 @@ assetsRouter.post(
   }
 );
 
-assetsRouter.get(
+// Reporting and Statistics Routes
+router.get(
   '/TotalSupply',
-  query('startDate').optional().isISO8601().withMessage('Must be a valid ISO8601 date'),
-  query('endDate').optional().isISO8601().withMessage('Must be a valid ISO8601 date'),
-  query('activeUserOnly').optional().isBoolean().withMessage('Must be a boolean'),
+  [...dateRangeValidators, query('activeUserOnly').optional().isBoolean().withMessage('Must be a boolean')],
   validateRequest,
   async (req: Request, res: Response) => {
     try {
-      const startDate = req.query.startDate as string | undefined;
-      const endDate = req.query.endDate as string | undefined;
+      const startDate = parseDate(req.query.startDate);
+      const endDate = parseDate(req.query.endDate);
       const activeUserOnly = req.query.activeUserOnly === 'true' || req.query.activeUserOnly === undefined;
       
       const coinService = new CoconikoCoin(getCoconikoCoinContract(req));
@@ -115,39 +150,20 @@ assetsRouter.get(
   }
 );
 
-assetsRouter.post(
-  '/BurnExpired',
-  body().isObject().withMessage('body must be an object'),
-  body('owner', 'must be a string').notEmpty(),
-  body('expirationDate').isISO8601().withMessage('Must be a valid ISO8601 date'),
-  validateRequest,
-  async (req: Request, res: Response) => {
-    try {
-      const { owner, expirationDate } = req.body;
-      
-      const coinService = new CoconikoCoin(getCoconikoCoinContract(req));
-      const result = await coinService.burnExpired(owner, expirationDate);
-      
-      return res.status(OK).json({ result });
-    } catch (err) {
-      return handleError(err, req, res);
-    }
-  }
-);
-
-assetsRouter.get(
+router.get(
   '/ClientAccountEventHistory',
-  query('startDate').optional().isISO8601().withMessage('Must be a valid ISO8601 date'),
-  query('endDate').optional().isISO8601().withMessage('Must be a valid ISO8601 date'),
-  query('pageSize').optional().isInt().withMessage('Must be an integer'),
-  query('skip').optional().isInt().withMessage('Must be an integer'),
+  [
+    ...dateRangeValidators,
+    query('pageSize').optional().isInt().withMessage('Must be an integer'),
+    query('skip').optional().isInt().withMessage('Must be an integer')
+  ],
   validateRequest,
   async (req: Request, res: Response) => {
     try {
-      const startDate = req.query.startDate as string | undefined;
-      const endDate = req.query.endDate as string | undefined;
-      const pageSize = req.query.pageSize ? parseInt(req.query.pageSize as string) : undefined;
-      const skip = req.query.skip ? parseInt(req.query.skip as string) : undefined;
+      const startDate = parseDate(req.query.startDate);
+      const endDate = parseDate(req.query.endDate);
+      const pageSize = parseOptionalInt(req.query.pageSize);
+      const skip = parseOptionalInt(req.query.skip);
       
       const coinService = new CoconikoCoin(getCoconikoCoinContract(req));
       const result = await coinService.getClientAccountEventHistory(startDate, endDate, pageSize, skip);
@@ -159,15 +175,14 @@ assetsRouter.get(
   }
 );
 
-assetsRouter.get(
+router.get(
   '/ClientAccountEventHistory/Count',
-  query('startDate').optional().isISO8601().withMessage('Must be a valid ISO8601 date'),
-  query('endDate').optional().isISO8601().withMessage('Must be a valid ISO8601 date'),
+  dateRangeValidators,
   validateRequest,
   async (req: Request, res: Response) => {
     try {
-      const startDate = req.query.startDate as string | undefined;
-      const endDate = req.query.endDate as string | undefined;
+      const startDate = parseDate(req.query.startDate as string | undefined);
+      const endDate = parseDate(req.query.endDate as string | undefined);
       
       const coinService = new CoconikoCoin(getCoconikoCoinContract(req));
       const result = await coinService.getClientAccountEventHistoryCount(startDate, endDate);
@@ -179,15 +194,14 @@ assetsRouter.get(
   }
 );
 
-assetsRouter.get(
+router.get(
   '/Summary',
-  query('startDate').optional().isISO8601().withMessage('Must be a valid ISO8601 date'),
-  query('endDate').optional().isISO8601().withMessage('Must be a valid ISO8601 date'),
+  dateRangeValidators,
   validateRequest,
   async (req: Request, res: Response) => {
     try {
-      const startDate = req.query.startDate as string | undefined;
-      const endDate = req.query.endDate as string | undefined;
+      const startDate = parseDate(req.query.startDate as string | undefined);
+      const endDate = parseDate(req.query.endDate as string | undefined);
       
       const coinService = new CoconikoCoin(getCoconikoCoinContract(req));
       const result = await coinService.getSummary(startDate, endDate);
@@ -199,4 +213,4 @@ assetsRouter.get(
   }
 );
 
-export { assetsRouter };
+export { router as assetsRouter };

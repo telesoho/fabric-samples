@@ -28,7 +28,7 @@ healthRouter.get('/live', async (req: Request, res: Response) => {
   logger.debug(req.body, 'Liveness request received');
 
   try {
-    const smartContract = new OdooUser(Connection.odooUserContract);
+    const smartContract = new OdooUser();
     const data = await smartContract.accountInfo();
     res.status(200).send(data);    
   } catch (err) {

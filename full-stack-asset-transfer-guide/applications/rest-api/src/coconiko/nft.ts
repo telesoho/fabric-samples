@@ -4,23 +4,18 @@ import { Connection } from '../connection';
 const utf8Decoder = new TextDecoder();
 
 export class CoconikoNFT {
-    readonly #contract: Contract;
+    readonly #contract?: Contract;
 
     constructor(contract?: Contract) {
-        if (!contract) {
-            this.#contract = Connection.coconikoNFTContract;
-        } else {
-            this.#contract = contract;
-        }
+        this.#contract = contract;
     }
 
     /**
      * Mint a new NFT
      */
-    async mintNFT(userId: string, metadata: any): Promise<any> {
-        const result = await this.#contract.submitTransaction(
+    async mintNFT(metadata: any): Promise<any> {
+        const result = await this.#contract?.submitTransaction(
             'MintNFT',
-            userId,
             JSON.stringify(metadata)
         );
         return JSON.parse(utf8Decoder.decode(result));
@@ -29,19 +24,14 @@ export class CoconikoNFT {
     /**
      * Transfer an NFT to another user
      */
-    async transferNFT(userId: string, tokenId: string, toAccountId: string, fromAccountId?: string): Promise<any> {
+    async transferNFT(tokenId: string, toAccountId: string, fromAccountId?: string): Promise<any> {
         const args = [
-            tokenId,
-            toAccountId
+            fromAccountId || "",
+            toAccountId,
+            tokenId
         ];
-        
-        if (fromAccountId) {
-            args.unshift(fromAccountId);
-        } else {
-            args.unshift(userId);
-        }
-        
-        const result = await this.#contract.submitTransaction(
+                
+        const result = await this.#contract?.submitTransaction(
             'TransferNFT',
             ...args
         );
@@ -52,8 +42,8 @@ export class CoconikoNFT {
      * Get NFT information by token ID
      */
     async getNFTInfo(tokenId: string): Promise<any> {
-        const result = await this.#contract.evaluateTransaction(
-            'GetNFTInfo',
+        const result = await this.#contract?.evaluateTransaction(
+            'GetNFT',
             tokenId
         );
         return JSON.parse(utf8Decoder.decode(result));
@@ -62,10 +52,9 @@ export class CoconikoNFT {
     /**
      * Get all NFTs owned by a user
      */
-    async getUserNFTs(userId: string): Promise<any> {
-        const result = await this.#contract.evaluateTransaction(
-            'GetUserNFTs',
-            userId
+    async getUserNFTs(): Promise<any> {
+        const result = await this.#contract?.evaluateTransaction(
+            'GetUserNFTs'
         );
         return JSON.parse(utf8Decoder.decode(result));
     }
