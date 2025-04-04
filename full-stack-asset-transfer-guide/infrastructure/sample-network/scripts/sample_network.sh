@@ -81,7 +81,7 @@ function wait_for() {
   # wait for the operator to reconcile the CRD with a Deployment
   # This can be VERY slow in some cases, e.g. IKS dynamic volume provisioning the PVC
   # can take a couple of minutes to come up before the pods/deployments can be scheduled.
-  kubectl -n $NS wait $type $name --for jsonpath='{.status.type}'=Deployed --timeout=3m
+  kubectl -n $NS wait $type $name --for jsonpath='{.status.type}'=Deployed --timeout=5m
 
   # wait for the deployment to reach Ready
   kubectl -n $NS rollout status deploy $name

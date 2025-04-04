@@ -40,5 +40,5 @@ async function main() {
 }
 
 main().catch(async (err) => {
-  logger.error({ err }, 'Unxepected error');
+  logger.error({ err }, 'Unexpected error');
 });

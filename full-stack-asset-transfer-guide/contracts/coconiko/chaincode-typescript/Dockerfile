@@ -36,7 +36,8 @@ EXPOSE $CC_SERVER_PORT
 
 ENV TINI_VERSION=v0.19.0
 ENV PLATFORM=${TARGETARCH}
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-${PLATFORM} /tini
+# ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-${PLATFORM} /tini
+ADD docker/tini-${PLATFORM} /tini
 RUN chmod +x /tini
 
 ENV NODE_ENV=production
@@ -60,7 +61,8 @@ RUN printenv
 
 ENV TINI_VERSION=v0.19.0
 ENV PLATFORM=${TARGETARCH}
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-${PLATFORM} /tini
+# ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-${PLATFORM} /tini
+ADD docker/tini-${PLATFORM} /tini
 RUN chmod +x /tini
 
 ENV NODE_ENV=production

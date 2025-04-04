@@ -141,16 +141,14 @@ class PostgreSQLManager {
                 config.coconikoChainCode
             );
             
-            // Process coin contract events asynchronously
-            void this.processChaincodeEvents(coinEventListener, 'CoconikoCoinEventListener');
+            void this.startChaincodeEventListener(coinEventListener, 'CoconikoCoinEventListener');
             
             // Listen for events from the coconiko-nft contract
             const nftEventListener = await network.getChaincodeEvents(
                 config.coconikoChainCode
             );
             
-            // Process NFT contract events asynchronously
-            void this.processChaincodeEvents(nftEventListener, 'CoconikoNFTEventListener');
+            void this.startChaincodeEventListener(nftEventListener, 'CoconikoNFTEventListener');
             
             // Store the listeners in the state store to properly clean up later
             this.putListenerObject('CoconikoCoinEventListener', {
@@ -167,30 +165,29 @@ class PostgreSQLManager {
                 remove: () => nftEventListener.close()
             });
         } catch (error) {
-            console.error('Failed to set up contract listeners:', error);
             logger.error('Failed to set up contract listeners', { error });
         }
     }
     
-    private async processChaincodeEvents(events: AsyncIterable<ChaincodeEvent>, listenerName: string): Promise<void> {
+    private async startChaincodeEventListener(
+        events: AsyncIterable<ChaincodeEvent>, 
+        listenerName: string
+    ): Promise<void> {
         try {
             for await (const event of events) {
-                console.debug('Received chaincode event:', event);
+                logger.debug(`[${listenerName}] Received chaincode event:`, {
+                    eventName: event.eventName,
+                    transactionId: event.transactionId,
+                    blockNumber: event.blockNumber
+                });
+                
                 await this.handleContractEvent(event);
             }
         } catch (error) {
-            console.error(`Error processing events for ${listenerName}:`, error);            
-            // Try to restart the listener if possible
-            const listener = this.getListeners().get(listenerName);
-            if (listener && listener.active) {
-                logger.info(`Attempting to restart event listener: ${listenerName}`);
-                try {
-                    listener.remove();
-                    await this.setupContractListener();
-                } catch (restartError) {
-                    logger.error(`Failed to restart listener ${listenerName}`, { error: restartError });
-                }
-            }
+            logger.error(`[${listenerName}] Error processing events:`, {
+                error: error instanceof Error ? error.message : 'Unknown error',
+                stack: error instanceof Error ? error.stack : undefined
+            });
         }
     }
 

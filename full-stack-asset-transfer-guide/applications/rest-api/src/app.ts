@@ -40,8 +40,6 @@ class App {
             })
         );
         // this.config();
-        this.assertRoutes.routes(this.app);
-        this.odooUserRoutes.routes(this.app);
         this.coconikoRoutes.routes(this.app);
         this.app.use('/', healthRouter);
     }
@@ -53,6 +51,8 @@ class App {
         this.app.use(bodyParser.urlencoded({
             extended: false
         }));
+        this.assertRoutes.routes(this.app);
+        this.odooUserRoutes.routes(this.app);
     }
 }
 export default new App().app;
