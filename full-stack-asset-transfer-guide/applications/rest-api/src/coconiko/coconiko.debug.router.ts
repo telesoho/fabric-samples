@@ -3,7 +3,7 @@ import { body } from 'express-validator';
 import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import { logger } from '../logger';
 import { CoconikoDebug } from './coconiko-debug';
-import { validateRequest } from '../middlewares/validation.middleware';
+import { validateAuthContext, validateRequest } from '../middlewares/validation.middleware';
 import { handleError } from '../errors';
 import { getCoconikoCoinContract } from '../connection';
  
@@ -17,6 +17,7 @@ assetsRouter.post(
   body('pageSize', 'must be a interger').isInt().notEmpty(),
   body('bookmark', 'must be a string'),
   validateRequest,
+  validateAuthContext,
   async (req: Request, res: Response) => {
     try {
       const { query, pageSize, bookmark = "" } = req.body;
@@ -37,6 +38,7 @@ assetsRouter.post(
   body('queryString', 'must be a valid SQL SELECT statement').isString().notEmpty(),
   body('params', 'must be an object').optional().isObject(),
   validateRequest,
+  validateAuthContext,
   async (req: Request, res: Response) => {
     try {
       const { queryString, params = {} } = req.body;

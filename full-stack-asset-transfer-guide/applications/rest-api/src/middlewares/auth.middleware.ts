@@ -56,10 +56,6 @@ const fabricAPIKeyStrategy: HeaderAPIKeyStrategy = new HeaderAPIKeyStrategy(
         }
       }
 
-      if(req) {
-        req.app.locals.userId = req.app.locals.mspId = mspId;
-      }
-
       const identity = await Connection.wallet.get(mspId);
       if (!identity) {
         return done(null, false, 'An identity for the user does not exist');        
@@ -91,6 +87,7 @@ const fabricAPIKeyStrategy: HeaderAPIKeyStrategy = new HeaderAPIKeyStrategy(
       });
 
       if(req) {
+        req.app.locals.userId = req.app.locals.mspId = mspId;
         req.app.locals.gateway = gateway;
       }
 
@@ -193,5 +190,4 @@ export const gatewayCloseMiddleware = async (
   next();
 };
 
-// 3 passportをexport
 export default passport;

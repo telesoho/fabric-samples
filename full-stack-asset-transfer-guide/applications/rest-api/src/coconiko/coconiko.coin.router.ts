@@ -3,7 +3,7 @@ import { body, query } from 'express-validator';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from '../logger';
 import { CoconikoCoin } from './coconiko-coin';
-import { validateRequest } from '../middlewares/validation.middleware';
+import { validateAuthContext, validateRequest } from '../middlewares/validation.middleware';
 import { handleError } from '../errors';
 import { getCoconikoCoinContract } from '../connection';
 
@@ -32,6 +32,7 @@ router.post(
   body('amount', '{Integer} amount amount of tokens to be minted').notEmpty(),
   body('days', '{Integer} expired days').optional().default(180),
   validateRequest,
+  validateAuthContext,
   async (req: Request, res: Response) => {
     logger.debug(req.body);
     try {
@@ -53,6 +54,7 @@ router.post(
   body('owner', 'must be a string').notEmpty(),
   body('expirationDate').isISO8601().withMessage('Must be a valid ISO8601 date'),
   validateRequest,
+  validateAuthContext,
   async (req: Request, res: Response) => {
     try {
       const { owner, expirationDate } = req.body;
@@ -72,6 +74,7 @@ router.post(
   '/BalanceOf',
   body('owners', 'Must be an string array of account id for whom to query the balance, min 0, max 1000').isArray({ min: 0, max: 1000 }),
   validateRequest,
+  validateAuthContext,
   async (req: Request, res: Response) => {
     logger.debug(req.body, 'Balance of owners');
     try {
@@ -92,6 +95,7 @@ router.post(
   body('to', 'must be a string').notEmpty(),
   body('amount').isInt().notEmpty(),
   validateRequest,
+  validateAuthContext,
   async (req: Request, res: Response) => {
     logger.debug(req.body, 'Transfer');
     try {
@@ -114,6 +118,7 @@ router.post(
   body('to', 'must be a string').notEmpty(),
   body('amount').isInt().notEmpty(),
   validateRequest,
+  validateAuthContext,
   async (req: Request, res: Response) => {
     logger.debug(req.body, 'TransferFrom');
     try {
@@ -134,6 +139,7 @@ router.get(
   '/TotalSupply',
   [...dateRangeValidators, query('activeUserOnly').optional().isBoolean().withMessage('Must be a boolean')],
   validateRequest,
+  validateAuthContext,
   async (req: Request, res: Response) => {
     try {
       const startDate = parseDate(req.query.startDate);
@@ -158,6 +164,7 @@ router.get(
     query('skip').optional().isInt().withMessage('Must be an integer')
   ],
   validateRequest,
+  validateAuthContext,
   async (req: Request, res: Response) => {
     try {
       const startDate = parseDate(req.query.startDate);
@@ -179,6 +186,7 @@ router.get(
   '/ClientAccountEventHistory/Count',
   dateRangeValidators,
   validateRequest,
+  validateAuthContext,
   async (req: Request, res: Response) => {
     try {
       const startDate = parseDate(req.query.startDate as string | undefined);
@@ -198,6 +206,7 @@ router.get(
   '/Summary',
   dateRangeValidators,
   validateRequest,
+  validateAuthContext,
   async (req: Request, res: Response) => {
     try {
       const startDate = parseDate(req.query.startDate);

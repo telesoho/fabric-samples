@@ -8,7 +8,7 @@ import * as config from '../config';
 import { Connection, getCoconikoCoinContract } from '../connection';
 import { connect, hash } from '@hyperledger/fabric-gateway';
 import { UserExistsError } from '../errors';
-import { validateRequest } from '../middlewares/validation.middleware';
+import { validateAuthContext, validateRequest } from '../middlewares/validation.middleware';
 import { handleError } from '../errors';
 
 
@@ -101,14 +101,14 @@ assetsRouter.post('/user',
   body().isObject().withMessage('body must be an object'),
   body('active', '{Boolean} activation status of the user').isBoolean().toBoolean().notEmpty(),
   validateRequest,
+  validateAuthContext,
   async (req: Request, res: Response) => {
     try {
       logger.debug(req.body);
       
       const { active } = req.body;
-      const coconikoCoinContract = getCoconikoCoinContract(req);
 
-      const coinService = new CoconikoCoin(coconikoCoinContract);
+      const coinService = new CoconikoCoin(getCoconikoCoinContract(req));
       const result = await coinService.ActiveUser(active);
       
       return res.status(OK).json({ result });
@@ -117,12 +117,12 @@ assetsRouter.post('/user',
     }
   });
 
-assetsRouter.get('/user', async (req: Request, res: Response) => {
-  try {
-    const coconikoCoinContract = getCoconikoCoinContract(req);
-
-    const coinService = new CoconikoCoin(coconikoCoinContract);
-    const result = await coinService.ClientAccountInfo();
+assetsRouter.get('/user',
+  validateAuthContext,
+  async (req: Request, res: Response) => {
+    try {
+      const coinService = new CoconikoCoin(getCoconikoCoinContract(req));
+      const result = await coinService.ClientAccountInfo();
 
     return res.status(OK).json({ result });
   } catch (err) {

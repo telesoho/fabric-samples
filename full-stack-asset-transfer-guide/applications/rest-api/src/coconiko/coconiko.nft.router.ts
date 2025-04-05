@@ -4,7 +4,7 @@ import {  StatusCodes } from 'http-status-codes';
 import { CoconikoNFT } from './nft';
 import { getNFTContract } from '../connection';
 import { handleError } from '../errors';
-import { validateRequest } from '../middlewares/validation.middleware';
+import { validateAuthContext, validateRequest } from '../middlewares/validation.middleware';
 
 const { OK } = StatusCodes;
 const assetsRouter = express.Router();
@@ -21,7 +21,8 @@ assetsRouter.post(
     body('metadata.price', 'NFT price must be a number').isNumeric().optional(),
     body('metadata.description', 'NFT description must be a string').optional().isString(),
     body('metadata.image', 'Invalid image URL format').isURL(),
-    validateRequest
+    validateRequest,
+    validateAuthContext,
   ],
   async (req: Request, res: Response) => {
     try {
@@ -46,7 +47,8 @@ assetsRouter.post(
     body('tokenId', 'NFT token ID must be a non-empty string').isString().notEmpty(),
     body('from', 'Sender account ID must be a valid string').isString().optional(),
     body('to', 'Recipient account ID must be a valid string').isString().notEmpty(),
-    validateRequest
+    validateRequest,
+    validateAuthContext,
   ],
   async (req: Request, res: Response) => {
     try {
@@ -68,7 +70,8 @@ assetsRouter.get(
   '/nft/:tokenId',
   [
     param('tokenId', 'NFT token ID must be a valid string').isString().notEmpty(),
-    validateRequest
+    validateRequest,
+    validateAuthContext,
   ],
   async (req: Request, res: Response) => {
     try {
@@ -88,6 +91,7 @@ assetsRouter.get(
  */
 assetsRouter.get(
   '/nft/my/NFTs',
+  validateAuthContext,
   async (req: Request, res: Response) => {
     try {
       const nftService = new CoconikoNFT(getNFTContract(req));
