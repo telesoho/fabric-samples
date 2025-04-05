@@ -9,14 +9,12 @@ import {
 import { Wallets } from './wallet/wallets';
 import { logger } from '../logger';
 import { Connection } from '../connection';
-/**
- *
- * @param {*} ccp
- */
-const buildCAClient = (): FabricCAServices => {
+
+
+const buildCAClient = (caHostName: string): FabricCAServices => {
 
   // Create a new CA client for interacting with the CA.
-  const caInfo = Connection.ccp.getCertificateAuthority(config.caHostName);
+  const caInfo = Connection.ccp.getCertificateAuthority(caHostName);
   const caTLSCACerts = getPEM(caInfo.tlsCACerts);
   const caClient = new FabricCAServices(
     caInfo.url,
@@ -234,7 +232,7 @@ export async function renewUserCertificate(userId: string, wallet: Wallet) {
   const user = await provider.getUserContext(identity, userId);
   
   // 重新注册以获取新证书
-  const caClient = buildCAClient();
+  const caClient = buildCAClient(config.caName);
   const enrollment = await caClient.reenroll(user, []);
   
   // 创建新的身份信息，可以保留原有私钥或生成新的

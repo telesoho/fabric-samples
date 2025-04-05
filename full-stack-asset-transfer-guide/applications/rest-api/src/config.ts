@@ -110,11 +110,18 @@ export const apiKeyFile = env
  * API key for Org Sdl
  * Specify this API key with the X-Api-Key header to use the Org1 connection profile and credentials
  */
-export const caHostName = env
-  .get('CA_HOST_NAME')
+export const caName = env
+  .get('CA_NAME')
   .required()
   .example('org1-ca')
   .asString();
+
+export const peerName = env
+  .get('PEER_NAME')
+  .default('peer1.org1')
+  .example('peer1.org1')
+  .asString();
+
 
 /**
  * Admin user name
@@ -243,77 +250,6 @@ export const walletPath = env
   .get('WALLET_PATH')
   .default('./wallet-data')
   .example('./wallet-data')
-  .asString();
-
-/**
- * The peer endpoint for the Fabric network
- */
-export const peerEndpoint = env
-  .get('PEER_ENDPOINT')
-  .default('test-network-org1-peer1-peer.localho.st:443')
-  .example('test-network-org1-peer1-peer.localho.st:443')
-  .asString();
-
-/**
- * The peer host alias for the Fabric network
- */
-export const peerHostAlias = env
-  .get('PEER_HOST_ALIAS')
-  .default('test-network-org1-peer1-peer.localho.st')
-  .example('test-network-org1-peer1-peer.localho.st')
-  .asString();
-
-/**
- * The path to the workshop
- */
-export const workshopPath = env
-  .get('WORKSHOP_PATH')
-  .default('/home/ubuntu/fabric-samples/full-stack-asset-transfer-guide')
-  .example('/home/ubuntu/fabric-samples/full-stack-asset-transfer-guide')
-  .asString();
-
-
-/**
- * Path to the fabric-ca-client executable
- * based on the workspace path
- */
-export const fabricCAClientPath = env
-  .get('FABRIC_CA_CLIENT_PATH')
-  .default(`${workshopPath}/bin/fabric-ca-client`)
-  .example(`${workshopPath}/bin/fabric-ca-client`)
-  .asString();
-
-export const workshopCryptoPath = env
-  .get('WORKSHOP_CRYPTO_PATH')
-  .default(`${workshopPath}/infrastructure/sample-network/temp`)
-  .example(`${workshopPath}/infrastructure/sample-network/temp`)
-  .asString();
-
-/**
- * CA TLS configuration
- */
-export const caTlsEnabled = env
-  .get('CA_TLS_ENABLED')
-  .default('true')
-  .example('true')
-  .asBool();
-
-/**
- * CA TLS certificate path
- */
-export const caTlsCertPath = env
-  .get('CA_TLS_CERT_PATH')
-  .default(`${workshopCryptoPath}/cas/org1-ca/tls-cert.pem`)
-  .example(`${workshopCryptoPath}/cas/org1-ca/tls-cert.pem`)
-  .asString();
-
-/**
- * Path to the TLS certificate
- */
-export const tlsCertPath = env
-  .get('TLS_CERT_PATH')
-  .default(`${workshopCryptoPath}/channel-msp/peerOrganizations/org1/msp/tlscacerts/tlsca-signcert.pem`)
-  .example(`${workshopCryptoPath}/channel-msp/peerOrganizations/org1/msp/tlscacerts/tlsca-signcert.pem`)
   .asString();
 
 /**

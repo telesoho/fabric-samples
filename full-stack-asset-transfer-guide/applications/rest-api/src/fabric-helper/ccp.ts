@@ -7,6 +7,7 @@ import * as path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { Utils } from 'fabric-common';
 import { logger } from '../logger';
+import { ClientOptions } from '@grpc/grpc-js';
 
 export function getPEM(credentials: Credentials): string {
   if (credentials.pem) {
@@ -40,10 +41,11 @@ interface Organization {
 }
 
 interface Endpoint {
+  url: string;
+  address: string;
   tlsCACerts: Credentials;
   caName?: string;
-  url: string;
-  grpcOptions: Record<string, string>;
+  clientOptions?: ClientOptions;
 }
 
 /**

@@ -2,7 +2,7 @@ import * as grpc from '@grpc/grpc-js';
 import { connect, Contract, hash, Gateway, Network } from '@hyperledger/fabric-gateway';
 import * as path from 'path';
 import express from 'express';
-import { promises as fs } from 'fs';
+import { promises as fs, readFileSync } from 'fs';
 import * as config from './config';
 import { createWallet } from './fabric-helper/ca_util';
 import { buildCAClient, enrollAdmin } from './fabric-helper/ca_util';
@@ -12,33 +12,18 @@ import { CommonConnectionProfileHelper } from './fabric-helper/ccp';
 import FabricCAServices from 'fabric-ca-client';
 import { Wallet } from './fabric-helper/wallet/wallet';
 import { Request } from 'express';
-// const channelName = envOrDefault('CHANNEL_NAME', 'mychannel');
-// const chaincodeName = envOrDefault('CHAINCODE_NAME', 'asset-transfer');
-// const odooUserChaincodeName = envOrDefault('CHAINCODE_NAME_ODOO_USER', 'odoo-user');
-
-const mspId = envOrDefault('MSP_ID', 'Org1MSP');
-//Local development and testing uncomment below code
-const WORKSHOP_CRYPTO =envOrDefault('CRYPTO_PATH', path.resolve(__dirname, '..','..', '..', 'infrastructure', 'sample-network', 'temp'));
-const keyPath = WORKSHOP_CRYPTO + "/enrollments/org1/users/org1admin/msp/keystore/key.pem";
-const certPath = WORKSHOP_CRYPTO + "/enrollments/org1/users/org1admin/msp/signcerts/cert.pem"
-const tlsCertPath = WORKSHOP_CRYPTO + "/channel-msp/peerOrganizations/org1/msp/tlscacerts/tlsca-signcert.pem";
 
 // //kubenetes certificates file path
 // const WORKSHOP_CRYPTO = "/etc/secret-volume/"
 // const keyPath = WORKSHOP_CRYPTO + "keyPath";
 // const certPath = WORKSHOP_CRYPTO + "certPath"
 // const tlsCertPath = WORKSHOP_CRYPTO + "tlsCertPath";
-console.log("keyPath " + keyPath);
-console.log("certPath " + certPath);
-console.log("tlsCertPath " + tlsCertPath);
-const peerEndpoint = "test-network-org1-peer1-peer.localho.st:443";
-const peerHostAlias = "test-network-org1-peer1-peer.localho.st";
 
 export class Connection {
     public static contract: Contract; 
     private static _caClient: FabricCAServices;
     private static _ccp: CommonConnectionProfileHelper;
-    private static _grpcClient: grpc.Client;
+    private static _grpcPeerClient: grpc.Client;
     private static _wallet: Wallet;
     private static _pgManager: PostgreSQLManager;
 
@@ -61,8 +46,8 @@ export class Connection {
             await Connection._pgManager.close();
         }
 
-        if(Connection._grpcClient) {
-            Connection._grpcClient.close();
+        if(Connection._grpcPeerClient) {
+            Connection._grpcPeerClient.close();
         }
     }
 
@@ -70,13 +55,6 @@ export class Connection {
         logger.info('Connecting to Fabric network with mspid');
         const wallet = await createWallet();
         Connection._wallet = wallet;
-
-        const tlsCertPath = Connection.ccp.getCertificateAuthority(config.caHostName).tlsCACerts.path;
-        const tlsRootCert = await fs.readFile(tlsCertPath);
-        const tlsCredentials = grpc.credentials.createSsl(tlsRootCert);
-        Connection._grpcClient = new grpc.Client(peerEndpoint, tlsCredentials, {
-            'grpc.ssl_target_name_override': peerHostAlias,
-        });
     
         // in a real application this would be done on an administrative flow, and only once
         await enrollAdmin(Connection.caClient, Connection.wallet, config.orgMSPID);
@@ -138,27 +116,26 @@ export class Connection {
     }
 
     public static get client(): grpc.Client {
-        if (!Connection._grpcClient) {
-            throw new Error('GRPC client not initialized');
-        }
-        return Connection._grpcClient;
+        return Connection.getPeerClient(config.peerName);
     }
 
-    public static async grpcClient() :Promise<grpc.Client> {
-        if (!Connection._grpcClient) {
-            const tlsCertPath = Connection.ccp.getCertificateAuthority(config.caHostName).tlsCACerts.path;
-            const tlsRootCert = await fs.readFile(tlsCertPath);
+    public static getPeerClient(peerName: string) :grpc.Client {
+        if (!Connection._grpcPeerClient) {
+            const peer = Connection.ccp.getPeer(peerName);
+            const tlsCertPath = peer.tlsCACerts.path;
+            const tlsRootCert = readFileSync(tlsCertPath);
             const tlsCredentials = grpc.credentials.createSsl(tlsRootCert);
-            Connection._grpcClient = new grpc.Client(peerEndpoint, tlsCredentials, {
-                'grpc.ssl_target_name_override': peerHostAlias,
-            });
+            // Connection._grpcPeerClient = new grpc.Client(config.peerEndpoint, tlsCredentials, {
+            //     'grpc.ssl_target_name_override': config.peerHostAlias,
+            // });
+            Connection._grpcPeerClient = new grpc.Client(peer.address, tlsCredentials, peer.clientOptions);
         }
-        return Connection._grpcClient;
+        return Connection._grpcPeerClient;
     }
 
     public static get caClient() :FabricCAServices {
         if (!Connection._caClient) {
-            Connection._caClient = buildCAClient();
+            Connection._caClient = buildCAClient(config.caName);
         }
         return Connection._caClient;
     }
@@ -171,12 +148,6 @@ export class Connection {
     }
 }
 
-/**
- * envOrDefault() will return the value of an environment variable, or a default value if the variable is undefined.
- */
-function envOrDefault(key: string, defaultValue: string): string {
-    return process.env[key] || defaultValue;
-}
 
 // Utility function to get contract instance
 export const getCoconikoCoinContract = (req: Request): Contract | undefined => {
