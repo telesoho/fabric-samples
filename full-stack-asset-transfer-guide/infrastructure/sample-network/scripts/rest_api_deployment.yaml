@@ -1,16 +1,65 @@
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rest-api-config
+data:
+  ccp.json: |
+    {
+      "name": "test-network",
+      "description": "The network to be in if you like scenario tests, not vegetables",
+      "version": "2.5",
+      "client": {
+        "organization": "Org1",
+        "credentialStore": {
+          "wallet": "./wallet-data"
+        }
+      },
+      "channels": {
+        "mychannel": {
+          "orderers": ["Org1"],
+          "peers": ["peer1.org1"],
+          "chaincodes": []
+        }
+      },
+      "organizations": {
+        "Org1": {
+          "mspid": "Org1MSP",
+          "peers": ["peer1.org1"],
+          "certificateAuthorities": ["org1-ca"]
+        }
+      },
+      "peers": {
+        "peer1.org1": {
+          "address": "test-network-org1-peer1-peer.localho.st:443",
+          "tlsCACerts": {
+            "path": "./wallet-data/tlsca-signcert.pem"
+          },
+          "clientOptions": {
+            "grpc.ssl_target_name_override": "test-network-org1-peer1-peer.localho.st"
+          }
+        }
+      },
+      "certificateAuthorities": {
+        "org1-ca": {
+          "url": "https://test-network-org1-ca-ca.localho.st:443",
+          "caName": "ca",
+          "tlsCACerts": {
+            "path": "./wallet-data/tlsca-signcert.pem"
+          }
+        }
+      }
+    }
+
+---
+apiVersion: v1
 kind: Secret
 metadata:
-  name: mysecret
+  name: rest-api-secret
 type: Opaque
-stringData:
-  config.yaml: |
-    apiUrl: "https://my.api.com/api/v1"
-    username: rcaadmin
-    password: rcaadminpw
-    tlsCertPath: /etc/secret-volume/tlsca-signcert.pem
-    tlsCert:
-      - /etc/secret-volume/tlsca-signcert.pem
+data:
+  username: cmNhYWRtaW4K # rcaadmin
+  password: cmNhYWRtaW5wdw== # rcaadminpw
+  JWT_SECRET: NzBmOGIwYWItYzhkOS00MGQ5LWEwNzgtOTllZjY5MzcxM2U0 # 70f8b0ab-c8d9-40d9-a178-99ef693713e4
 ---
 kind: Deployment
 apiVersion: apps/v1
@@ -20,7 +69,7 @@ metadata:
     app: rest-api
   annotations:
     reloader.stakater.com/auto: "true"
-    secret.reloader.stakater.com/reload: "my-secret"    
+    secret.reloader.stakater.com/reload: "rest-api-secret,my-secret"    
 spec:
   replicas: 1
   selector:
@@ -34,12 +83,45 @@ spec:
       volumes:
         - name: secret-volume
           secret:
-            secretName: my-secret
+            secretName: rest-api-secret
       containers:
         - name: rest-api
           image: localhost:5000/rest-api:latest
           ports:
-            - containerPort: 8080
+            - containerPort: 3000
+          env:
+            - name: LOG_LEVEL
+              value: "debug"
+            - name: PORT
+              value: "3000"
+            - name: ORG_MSP_ID
+              value: "Org1MSP"
+            - name: ADMIN
+              valueFrom:
+                secretKeyRef:
+                  name: my-secret
+                  key: USERNAME
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: my-secret
+                  key: PASSWORD
+            - name: CHANNEL_NAME
+              value: "mychannel"
+            - name: CA_NAME
+              value: "org1-ca"
+            - name: PEER_NAME
+              value: "peer1.org1"
+            - name: COMMON_CONNECTION_PROFILE_FILE
+              value: "test-network-ccp.json"
+            - name: APIKEY_FILE
+              value: "api-keys.sample.json"
+            - name: JWT_SECRET
+              value: "70f8b0ab-c8d9-40d9-a178-99ef693713e4"
+            - name: RATE_LIMIT_WINDOW_MS
+              value: "60000"
+            - name: RATE_LIMIT_MAX
+              value: "100"
           volumeMounts:
             - name: secret-volume
               readOnly: true
@@ -55,15 +137,15 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 8080
+      targetPort: 3000
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: api.ambs.telesoho.com
+  name: restapi.localho.st
 spec:
   rules:
-  - host: api.ambs.telesoho.com
+  - host: restapi.localho.st
     http:
       paths:
       - path: /
@@ -74,34 +156,3 @@ spec:
             port:
               number: 80
   ingressClassName: nginx
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: rest-api
-  annotations:
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: 60s
-    # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-  # labels:
-  #   app: rest-api
-  #   app.kubernetes.io/instance: fabricpeer
-  #   app.kubernetes.io/managed-by: fabric-operator
-  #   app.kubernetes.io/name: fabric
-  #   creator: fabric
-  #   orgname: Org1MSP
-spec:
-  ingressClassName: nginx
-  rules:
-    - host: restapi.localho.st
-      http:
-        paths:
-          - backend:
-              service:
-                name: rest-api
-                port:
-                  number: 80
-            path: /
-            pathType: ImplementationSpecific
-  tls:
-    - hosts:
-        - restapi.localho.st

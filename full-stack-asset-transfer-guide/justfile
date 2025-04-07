@@ -95,6 +95,20 @@ console: operator
 operator-crds: check-kube
     kubectl apply -k https://github.com/hyperledger-labs/fabric-operator.git/config/crd
 
+# install reloader
+reloader:
+    kubectl apply -k https://github.com/stakater/Reloader.git/deployments/kubernetes
+
+# uninstall reloader
+unreloader:
+    kubectl delete -k https://github.com/stakater/Reloader.git/deployments/kubernetes
+
+test-deploy:
+    kubectl apply -f infrastructure/sample-network/scripts/test_deployment.yaml
+
+test-undeploy:
+    kubectl delete -f infrastructure/sample-network/scripts/test_deployment.yaml
+
 # Install the Prometheus operator and CRDs
 monitoring: check-setup
     # you also can use following command to download all files of setup 

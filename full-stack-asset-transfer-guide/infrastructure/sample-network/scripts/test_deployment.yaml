@@ -63,10 +63,11 @@ metadata:
   name: test-secret
   namespace: test
 type: Opaque
+data:
+  USERNAME: cmNhYWRtaW4K
+  PASSWORD: cmNhYWRtaW5wdw==
+  JWT_SECRET: NzBmOGIwYWItYzhkOS00MGQ5LWEwNzgtOTllZjY5MzcxM2U0 # 70f8b0ab-c8d9-40d9-a178-99ef693713e4
 stringData:
-  credentials.yaml: |
-    username: rcaadmin
-    password: rcaadminpw
   tlsca-signcert.pem: |
     -----BEGIN CERTIFICATE-----
     您的证书内容
@@ -75,8 +76,6 @@ stringData:
     -----BEGIN CERTIFICATE-----
     您的证书内容
     -----END CERTIFICATE-----
-
-
 ---
 kind: Deployment
 apiVersion: apps/v1
@@ -87,7 +86,7 @@ metadata:
     app: test
   annotations:
     reloader.stakater.com/auto: "true"
-    secret.reloader.stakater.com/reload: "test-secret"    
+    secret.reloader.stakater.com/reload: "test-secret"
 spec:
   replicas: 1
   selector:
@@ -115,11 +114,21 @@ spec:
           image: nicolaka/netshoot
           command: ["sleep", "3600"]
           env:
-            - name: CERT_CONTENT
+            - name: ADMIN
               valueFrom:
                 secretKeyRef:
                   name: test-secret
-                  key: CERT_PEM
+                  key: USERNAME
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: test-secret
+                  key: PASSWORD
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: test-secret
+                  key: JWT_SECRET
           volumeMounts:
             - name: config-volume
               mountPath: "/etc/config"
