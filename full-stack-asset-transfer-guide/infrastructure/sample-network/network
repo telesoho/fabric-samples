@@ -143,6 +143,7 @@ function print_help() {
 . scripts/channel.sh
 . scripts/rest_sample.sh
 . scripts/frontend_build.sh
+. scripts/rest_api.sh
 
 # check for kind, kubectl, etc.
 check_prereqs
@@ -184,8 +185,12 @@ elif [ "${MODE}" == "console" ]; then
   console_up
   log "🏁 - Console is ready"
 elif [ "${MODE}" == "rest-easy" ]; then
-  log "Launching Rest API"
+  log "Launching Sample Rest API"
   launch_rest_sample
+  log "🏁 - Rest API is ready at https://restapi.localho.st"
+elif [ "${MODE}" == "rest-api" ]; then
+  log "Launching Rest API"
+  launch_rest_api
   log "🏁 - Rest API is ready at https://restapi.localho.st"
 elif [ "${MODE}" == "frontend" ]; then
   log "Launching frontend"

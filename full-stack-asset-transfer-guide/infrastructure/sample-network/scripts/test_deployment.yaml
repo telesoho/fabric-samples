@@ -1,0 +1,177 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  namespace: test
+data:
+  ccp.json: |
+    {
+      "name": "test-network",
+      "description": "The network to be in if you like scenario tests, not vegetables",
+      "version": "2.5",
+      "client": {
+        "organization": "Org1",
+        "credentialStore": {
+          "wallet": "./wallet-data"
+        }
+      },
+      "channels": {
+        "mychannel": {
+          "orderers": ["Org1"],
+          "peers": ["peer1.org1"],
+          "chaincodes": []
+        }
+      },
+      "organizations": {
+        "Org1": {
+          "mspid": "Org1MSP",
+          "peers": ["peer1.org1"],
+          "certificateAuthorities": ["org1-ca"]
+        }
+      },
+      "peers": {
+        "peer1.org1": {
+          "address": "test-network-org1-peer1-peer.localho.st:443",
+          "tlsCACerts": {
+            "path": "./wallet-data/tlsca-signcert.pem"
+          },
+          "clientOptions": {
+            "grpc.ssl_target_name_override": "test-network-org1-peer1-peer.localho.st"
+          }
+        }
+      },
+      "certificateAuthorities": {
+        "org1-ca": {
+          "url": "https://test-network-org1-ca-ca.localho.st:443",
+          "caName": "ca",
+          "tlsCACerts": {
+            "path": "./wallet-data/tlsca-signcert.pem"
+          }
+        }
+      }
+    }
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-secret
+  namespace: test
+type: Opaque
+stringData:
+  credentials.yaml: |
+    username: rcaadmin
+    password: rcaadminpw
+  tlsca-signcert.pem: |
+    -----BEGIN CERTIFICATE-----
+    您的证书内容
+    -----END CERTIFICATE-----
+  CERT_PEM: |
+    -----BEGIN CERTIFICATE-----
+    您的证书内容
+    -----END CERTIFICATE-----
+
+
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: test
+  namespace: test
+  labels:
+    app: test
+  annotations:
+    reloader.stakater.com/auto: "true"
+    secret.reloader.stakater.com/reload: "test-secret"    
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+      namespace: test
+    spec:
+      volumes:
+        - name: config-volume
+          configMap:
+            name: test-config
+        - name: secret-volume
+          secret:
+            secretName: test-secret
+      hostAliases:
+      - ip: "192.168.31.55"
+        hostnames:
+        - "host.local"
+      containers:
+        - name: test
+          image: nicolaka/netshoot
+          command: ["sleep", "3600"]
+          env:
+            - name: CERT_CONTENT
+              valueFrom:
+                secretKeyRef:
+                  name: test-secret
+                  key: CERT_PEM
+          volumeMounts:
+            - name: config-volume
+              mountPath: "/etc/config"
+            - name: secret-volume
+              readOnly: true
+              mountPath: "/etc/secret-volume"
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: test-init
+  namespace: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-init
+  template:
+    metadata:
+      labels:
+        app: test-init
+    spec:
+      volumes:
+        - name: secret-volume
+          secret:
+            secretName: test-secret
+        - name: shared-config
+          emptyDir: {}
+      initContainers:
+        - name: prepare-config
+          image: busybox
+          command:
+            - /bin/sh
+            - -c
+            - |
+              # 读取证书内容
+              CERT_CONTENT=$(cat /etc/secret-volume/tlsca-signcert.pem)
+              # 转义特殊字符
+              ESCAPED_CERT=$(echo "$CERT_CONTENT" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+              # 替换JSON文件中的占位符
+              cat /etc/secret-volume/ccp.json | sed "s/\\\$LICENSE/\"$ESCAPED_CERT\"/g" > /config/processed-ccp.json
+              echo "配置文件处理完成"
+          volumeMounts:
+            - name: secret-volume
+              readOnly: true
+              mountPath: "/etc/secret-volume"
+            - name: shared-config
+              mountPath: "/config"
+      containers:
+        - name: main-app
+          image: nicolaka/netshoot
+          command: ["sleep", "3600"]
+          volumeMounts:
+            - name: shared-config
+              mountPath: "/etc/app-config" 

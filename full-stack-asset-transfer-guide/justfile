@@ -353,6 +353,10 @@ cloud-rest-easy:
 cloud-frontend:
     infrastructure/sample-network/network frontend
 
+# Create 'rest-api'
+cloud-rest-api:
+    infrastructure/sample-network/network rest-api
+
 ###############################################################################
 # ANSIBLE PLAYBOOK TARGETS                                                    #
 ###############################################################################
