@@ -12,6 +12,8 @@ RUN npm run build && npm shrinkwrap
 FROM node:22 as prod-builder
 WORKDIR /usr/src/app
 COPY --chown=node:node --from=builder /usr/src/app/dist ./dist
+COPY --chown=node:node --from=builder /usr/src/app/fabric-ca-client ./fabric-ca-client
+COPY --chown=node:node --from=builder /usr/src/app/fabric-common ./fabric-common
 COPY --chown=node:node --from=builder /usr/src/app/package.json ./
 COPY --chown=node:node --from=builder /usr/src/app/npm-shrinkwrap.json ./
 RUN npm ci --omit=dev && npm cache clean --force

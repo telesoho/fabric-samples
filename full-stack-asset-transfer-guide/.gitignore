@@ -8,8 +8,6 @@ _*
 *.tar.gz
 ~*.pptx
 
-bin
-config
 
 .DS_Store
 .idea/

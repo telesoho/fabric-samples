@@ -75,7 +75,8 @@ assetsRouter.put(
 
       const coinService = new CoconikoCoin(coconikoCoinContract);
       const result = await coinService.CreateUserAccount();
-      
+      gateway.close();
+
       return res.status(OK).json({
         user_name: username,
         app_id: req.app.locals.appInfo.app_id,

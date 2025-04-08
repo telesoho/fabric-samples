@@ -1,4 +1,4 @@
-import {ICryptoSuite, User} from 'fabric-common';
+import {ICryptoSuite, User} from '../../../fabric-common';
 
 import {Identity} from './identity';
 import {IdentityData} from './identitydata';

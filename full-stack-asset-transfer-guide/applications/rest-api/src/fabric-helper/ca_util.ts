@@ -1,4 +1,4 @@
-import FabricCAServices from 'fabric-ca-client';
+import FabricCAServices from '../../fabric-ca-client';
 import { Wallet } from './wallet/wallet';
 import { Identity } from './wallet/identity';
 import { UserExistsError } from '../errors';
@@ -10,6 +10,15 @@ import { Wallets } from './wallet/wallets';
 import { logger } from '../logger';
 import { Connection } from '../connection';
 
+// // Use CommonJS require for fabric-common as it seems the Utils is not properly exposed as an ESM export
+// // @ts-ignore
+// const { Utils: utils } = require('fabric-common');
+
+// // setup the location of the default config shipped with code
+// const default_config = path.resolve(__dirname, './config.json');
+// const configClient = utils.getConfig();
+// configClient.reorderFileStores(default_config, true);
+// console.debug(configClient.get('connection-timeout', 3000));
 
 const buildCAClient = (caHostName: string): FabricCAServices => {
 

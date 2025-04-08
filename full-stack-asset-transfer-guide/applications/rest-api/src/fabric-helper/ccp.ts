@@ -5,7 +5,7 @@
 
 import * as path from 'path';
 import { existsSync, readFileSync } from 'fs';
-import { Utils } from 'fabric-common';
+import { Utils } from '../../fabric-common';
 import { logger } from '../logger';
 import { ClientOptions } from '@grpc/grpc-js';
 

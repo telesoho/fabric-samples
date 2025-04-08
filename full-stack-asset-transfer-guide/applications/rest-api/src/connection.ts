@@ -1,6 +1,5 @@
 import * as grpc from '@grpc/grpc-js';
 import { connect, Contract, hash, Gateway, Network } from '@hyperledger/fabric-gateway';
-import * as path from 'path';
 import express from 'express';
 import { promises as fs, readFileSync } from 'fs';
 import * as config from './config';
@@ -9,7 +8,7 @@ import { buildCAClient, enrollAdmin } from './fabric-helper/ca_util';
 import { PostgreSQLManager } from './fabric-helper/postgresql_manager';
 import { logger } from './logger';
 import { CommonConnectionProfileHelper } from './fabric-helper/ccp';
-import FabricCAServices from 'fabric-ca-client';
+import FabricCAServices from '../fabric-ca-client/types';
 import { Wallet } from './fabric-helper/wallet/wallet';
 import { Request } from 'express';
 
@@ -26,7 +25,7 @@ export class Connection {
     private static _grpcPeerClient: grpc.Client;
     private static _wallet: Wallet;
     private static _pgManager: PostgreSQLManager;
-
+    private static _gateway: Gateway;
     private _app: express.Application;
 
     constructor(app: express.Application) {
@@ -48,6 +47,10 @@ export class Connection {
 
         if(Connection._grpcPeerClient) {
             Connection._grpcPeerClient.close();
+        }
+
+        if(Connection._gateway) {
+            Connection._gateway.close();
         }
     }
 
@@ -89,6 +92,8 @@ export class Connection {
                 return { deadline: Date.now() + 60000 }; // 1 minute
             },
         });
+
+        Connection._gateway = gateway;
   
         if(config.postgreSqlUri) {
           const dbManager = await PostgreSQLManager.create(

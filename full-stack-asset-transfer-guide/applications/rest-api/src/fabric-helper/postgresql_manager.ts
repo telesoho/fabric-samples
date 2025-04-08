@@ -262,7 +262,7 @@ class PostgreSQLManager {
         // if (this.db) {
         //     await this.db.$pool.end();
         // }
-    }    
+    }
 
     private async initializeBossQueues() {
         if (!this.boss) throw new Error('PgBoss instance not initialized');
