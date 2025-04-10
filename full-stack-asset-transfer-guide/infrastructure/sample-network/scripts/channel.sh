@@ -220,7 +220,7 @@ function join_channel_orderers() {
   join_channel_orderer org0 orderersnode3
 
   # todo: readiness / liveiness equivalent for channel?  Needs a little bit to settle before peers can join.
-  sleep 10
+  sleep 180
 
   pop_fn
 }

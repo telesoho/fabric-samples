@@ -207,6 +207,9 @@ CHAINCODE_PACKAGE=${CHAINCODE_NAME}.tgz
 build_cc_typescript
 prepare_cc
 install_cc
+
+kubectl -n ${WORKSHOP_NAMESPACE} wait --for=condition=ready pod --selector=app.kubernetes.io/created-by=fabric-builder-k8s --timeout=3m
+
 check_cc_meta
 invoke_chaincode $CHAINCODE_NAME '{"Args":["CoconikoCoinContract:Initialize"]}'
 

@@ -143,6 +143,11 @@ unambs:
 # Run e2e tests of all scenarios
 test: test-chaincode test-appdev test-cloud # test-ansible
 
+test-sdl:
+    tests/ts-pn-1-network-up.sh
+    tests/ts-pn-2-create-admin.sh
+    tests/ts-pn-3-deploy-cc.sh
+
 # Run an e2e test of the SmartContractDev scenario
 test-chaincode:
     tests/00-chaincode-e2e.sh
